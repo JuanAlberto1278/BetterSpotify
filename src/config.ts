@@ -5,6 +5,8 @@ export const REDIRECT_URI = 'http://127.0.0.1:5173/callback';
 
 export const SCOPES = [
   'streaming',
+  // El Web Playback SDK exige user-read-email (aunque /me ya no devuelva el email).
+  'user-read-email',
   'user-read-private',
   'user-read-playback-state',
   'user-modify-playback-state',

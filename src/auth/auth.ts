@@ -193,6 +193,13 @@ export function initAuth(): void {
   if (initialized) return;
   initialized = true;
 
+  // Si cambiaron los scopes de la app, el token viejo no sirve: pedir login de nuevo.
+  const tokens = loadTokens();
+  if (tokens && !hasRequiredScopes(tokens)) {
+    console.info('[auth] faltan scopes en el token guardado, se requiere iniciar sesión de nuevo');
+    clearTokens();
+  }
+
   scheduleRefresh();
 
   // Mantener sincronizadas varias pestañas abiertas.
@@ -211,6 +218,11 @@ export function initAuth(): void {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
+
+function hasRequiredScopes(tokens: StoredTokens): boolean {
+  const granted = new Set(tokens.scope.split(' '));
+  return SCOPES.every((scope) => granted.has(scope));
+}
 
 function storeTokens(tokens: StoredTokens) {
   saveTokens(tokens);

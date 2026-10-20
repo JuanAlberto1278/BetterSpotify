@@ -125,9 +125,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         player.addListener('initialization_error', (e) =>
           fail(`Este navegador no puede reproducir: ${e.message}`),
         );
-        player.addListener('authentication_error', (e) =>
-          fail(`Error de autenticación del reproductor: ${e.message}`),
-        );
+        // No es fatal: el SDK vuelve a pedir el token con getOAuthToken.
+        player.addListener('authentication_error', (e) => {
+          if (!cancelled) setError(`Error de autenticación del reproductor: ${e.message}`);
+        });
         player.addListener('account_error', () =>
           fail('Se necesita Spotify Premium para reproducir en el navegador.'),
         );
