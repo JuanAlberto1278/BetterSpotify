@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from './auth/AuthProvider';
+import { PlayerProvider } from './player/PlayerProvider';
 import CallbackPage from './ui/pages/CallbackPage';
 import LoginPage from './ui/pages/LoginPage';
 import MainLayout from './ui/pages/MainLayout';
@@ -14,5 +15,10 @@ export default function App() {
   }, []);
 
   if (path === '/callback') return <CallbackPage onDone={() => navigate('/')} />;
-  return isAuthenticated ? <MainLayout /> : <LoginPage />;
+  if (!isAuthenticated) return <LoginPage />;
+  return (
+    <PlayerProvider>
+      <MainLayout />
+    </PlayerProvider>
+  );
 }

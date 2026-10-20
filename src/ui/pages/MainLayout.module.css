@@ -1,7 +1,7 @@
 .layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 
 .header {
@@ -13,10 +13,14 @@
 }
 
 .content {
-  flex: 1;
+  overflow-y: auto;
   padding: 1.5rem;
 }
 
 .error {
   color: var(--danger);
+}
+
+.placeholder {
+  color: var(--text-muted);
 }

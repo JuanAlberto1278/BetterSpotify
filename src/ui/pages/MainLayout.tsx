@@ -1,5 +1,5 @@
 import { useAuth } from '../../auth/AuthProvider';
-import AuthDebug from '../components/AuthDebug';
+import PlayerBar from '../components/PlayerBar';
 import styles from './MainLayout.module.css';
 
 export default function MainLayout() {
@@ -13,9 +13,12 @@ export default function MainLayout() {
       </header>
       <main className={styles.content}>
         {userError && <p className={styles.error}>{userError}</p>}
-        {/* Temporal (etapa 1): para probar el refresh. */}
-        <AuthDebug />
+        <p className={styles.placeholder}>
+          Las playlists y la búsqueda llegan en la etapa 3. Por ahora podés elegir
+          “BetterSpotify” como dispositivo desde la app de Spotify y controlarlo desde acá.
+        </p>
       </main>
+      <PlayerBar />
     </div>
   );
 }
