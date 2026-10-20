@@ -13,5 +13,6 @@ Cliente web personal de Spotify: React + TypeScript + Vite, sin backend (Authori
 
 - `src/auth/` – PKCE, tokens, refresh automático
 - `src/api/` – cliente de la Web API (`spotifyFetch`) con manejo de 401/403/429
+- `src/data/` – hooks de datos (playlists, canciones, búsqueda) con paginación
 - `src/player/` – Web Playback SDK y hook del player
 - `src/ui/` – componentes y estilos (solo presentación)
