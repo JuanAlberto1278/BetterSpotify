@@ -1,0 +1,22 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.error {
+  color: var(--danger);
+}
