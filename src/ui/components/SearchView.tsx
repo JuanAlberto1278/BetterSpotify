@@ -1,25 +1,26 @@
 import { useTrackSearch } from '../../data/useLibrary';
 import { usePlayer } from '../../player/usePlayer';
+import { navigate } from '../../router/router';
+import { paths } from '../../router/routes';
 import TrackList from './TrackList';
 import styles from './View.module.css';
 
-interface Props {
-  query: string;
-  onQueryChange: (query: string) => void;
-}
+export const SEARCH_INPUT_ID = 'search-input';
 
-export default function SearchView({ query, onQueryChange }: Props) {
+export default function SearchView({ query }: { query: string }) {
   const results = useTrackSearch(query);
   const { playTracks } = usePlayer();
 
   return (
     <section>
       <input
+        id={SEARCH_INPUT_ID}
         className={styles.search}
         type="search"
         placeholder="¿Qué querés escuchar?"
         value={query}
-        onChange={(e) => onQueryChange(e.target.value)}
+        // replace: escribir no llena el historial; "atrás" vuelve a la vista anterior.
+        onChange={(e) => navigate(paths.search(e.target.value), { replace: true })}
         autoFocus
       />
 

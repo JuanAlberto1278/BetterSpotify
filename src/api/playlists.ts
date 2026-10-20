@@ -14,10 +14,21 @@ export function getMyPlaylistsPage(
   });
 }
 
+/** Datos de cabecera de una playlist (sin sus canciones). */
+export function getPlaylist(playlistId: string, signal?: AbortSignal): Promise<SimplifiedPlaylist> {
+  return spotifyFetch(`/playlists/${encodeURIComponent(playlistId)}`, {
+    query: { fields: 'id,name,uri,description,images,owner(id,display_name),collaborative' },
+    signal,
+  });
+}
+
 /**
  * Una página de canciones de una playlist (endpoint /items, campo `item`).
  * Se descartan episodios, archivos locales y elementos borrados, que no se pueden
  * reproducir desde acá.
+ *
+ * En modo desarrollo Spotify solo devuelve el contenido de playlists propias o
+ * colaborativas.
  */
 export async function getPlaylistTracksPage(
   playlistId: string,
@@ -34,8 +45,4 @@ export async function getPlaylistTracksPage(
       .map((entry) => entry.item)
       .filter((item): item is Track => item?.type === 'track' && !item.is_local),
   };
-}
-
-export function getPlaylistTotal(playlist: SimplifiedPlaylist): number | null {
-  return playlist.items?.total ?? playlist.tracks?.total ?? null;
 }

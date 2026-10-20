@@ -1,23 +1,12 @@
-import { useRef } from 'react';
 import { usePlayer } from '../../player/usePlayer';
 import styles from './PlayerBar.module.css';
 
 export default function VolumeControl() {
-  const { volume, setVolume } = usePlayer();
-  const beforeMute = useRef(0.5);
-
-  const toggleMute = () => {
-    if (volume > 0) {
-      beforeMute.current = volume;
-      setVolume(0);
-    } else {
-      setVolume(beforeMute.current || 0.5);
-    }
-  };
+  const { volume, setVolume, toggleMute } = usePlayer();
 
   return (
     <div className={styles.volume}>
-      <button className={styles.iconButton} onClick={toggleMute} aria-label="Silenciar">
+      <button className={styles.iconButton} onClick={toggleMute} aria-label="Silenciar" title="Silenciar (M)">
         {volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
       </button>
       <input
@@ -28,6 +17,7 @@ export default function VolumeControl() {
         value={Math.round(volume * 100)}
         onChange={(e) => setVolume(Number(e.target.value) / 100)}
         aria-label="Volumen"
+        title="Volumen (Shift + ↑ / ↓)"
       />
     </div>
   );

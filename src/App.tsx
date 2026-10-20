@@ -1,24 +1,22 @@
-import { useCallback, useState } from 'react';
 import { useAuth } from './auth/AuthProvider';
 import { PlayerProvider } from './player/PlayerProvider';
+import { navigate, useRoute } from './router/router';
+import { paths } from './router/routes';
 import CallbackPage from './ui/pages/CallbackPage';
 import LoginPage from './ui/pages/LoginPage';
 import MainLayout from './ui/pages/MainLayout';
 
+const goHome = () => navigate(paths.home(), { replace: true });
+
 export default function App() {
   const { isAuthenticated } = useAuth();
-  const [path, setPath] = useState(window.location.pathname);
+  const route = useRoute();
 
-  const navigate = useCallback((to: string) => {
-    window.history.replaceState(null, '', to);
-    setPath(to);
-  }, []);
-
-  if (path === '/callback') return <CallbackPage onDone={() => navigate('/')} />;
+  if (route.name === 'callback') return <CallbackPage onDone={goHome} />;
   if (!isAuthenticated) return <LoginPage />;
   return (
     <PlayerProvider>
-      <MainLayout />
+      <MainLayout route={route} />
     </PlayerProvider>
   );
 }

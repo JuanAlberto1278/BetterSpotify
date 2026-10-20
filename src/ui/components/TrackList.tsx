@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.' }: Props) {
-  const { track: current, paused } = usePlayer();
+  const { track: current, paused, addToQueue } = usePlayer();
   const { items, loading, error, hasMore, loadMore } = list;
 
   return (
@@ -23,6 +23,7 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
         <ol className={styles.list}>
           {items.map((track, index) => {
             const isCurrent = current?.uri === track.uri;
+            const cover = pickImage(track.album.images, 40);
             return (
               <li
                 // Una playlist puede repetir canciones: el índice desambigua.
@@ -38,8 +39,8 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                   <span className={styles.number}>{isCurrent && !paused ? '♪' : index + 1}</span>
                   <span className={styles.playIcon}>▶</span>
                 </button>
-                {pickImage(track.album.images, 40) ? (
-                  <img className={styles.cover} src={pickImage(track.album.images, 40)!} alt="" loading="lazy" />
+                {cover ? (
+                  <img className={styles.cover} src={cover} alt="" loading="lazy" />
                 ) : (
                   <div className={styles.cover} />
                 )}
@@ -51,6 +52,14 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                   <div className={styles.artists}>{track.artists.map((a) => a.name).join(', ')}</div>
                 </div>
                 <div className={styles.album}>{track.album.name}</div>
+                <button
+                  className={styles.queueButton}
+                  onClick={() => addToQueue(track.uri)}
+                  aria-label={`Agregar ${track.name} a la cola`}
+                  title="Agregar a la cola"
+                >
+                  ＋
+                </button>
                 <div className={styles.duration}>{formatDuration(track.duration_ms)}</div>
               </li>
             );

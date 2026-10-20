@@ -6,7 +6,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2.5rem 40px minmax(0, 3fr) minmax(0, 2fr) 3.5rem;
+  grid-template-columns: 2.5rem 40px minmax(0, 3fr) minmax(0, 2fr) 2rem 3.5rem;
   align-items: center;
   gap: 0.75rem;
   padding: 0.35rem 0.5rem;
@@ -40,6 +40,23 @@
 
 .row:hover .playIcon {
   display: inline;
+}
+
+.queueButton {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  visibility: hidden;
+}
+
+.row:hover .queueButton,
+.queueButton:focus-visible {
+  visibility: visible;
+}
+
+.queueButton:hover {
+  color: var(--text);
 }
 
 .cover {
@@ -95,7 +112,7 @@
 
 @media (max-width: 700px) {
   .row {
-    grid-template-columns: 2.5rem 40px minmax(0, 1fr) 3.5rem;
+    grid-template-columns: 2.5rem 40px minmax(0, 1fr) 2rem 3.5rem;
   }
 
   .album {

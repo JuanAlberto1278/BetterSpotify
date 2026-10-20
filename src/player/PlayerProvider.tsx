@@ -1,14 +1,25 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getValidAccessToken } from '../auth/auth';
 import { describeError, SpotifyApiError } from '../api/errors';
-import { startPlayback, transferPlayback } from '../api/player';
+import {
+  addToQueue as apiAddToQueue,
+  setRepeat,
+  setShuffle,
+  startPlayback,
+  transferPlayback,
+  type RepeatMode,
+} from '../api/player';
 import { loadSpotifySdk } from './loadSdk';
 
 const PLAYER_NAME = 'BetterSpotify';
 const VOLUME_STORAGE_KEY = 'betterspotify.volume';
+const REPEAT_MODES: RepeatMode[] = ['off', 'context', 'track'];
+/** Máximo de URIs que se mandan en una reproducción de lista suelta. */
+const MAX_URIS = 100;
 
 // ── Tipos públicos (lo que consume la UI) ───────────────────────────────────
 
+export type { RepeatMode };
 export type PlayerStatus = 'connecting' | 'ready' | 'error';
 
 export interface PlayerTrack {
@@ -28,6 +39,22 @@ export interface PositionSnapshot {
   takenAt: number;
 }
 
+export interface Toast {
+  id: number;
+  kind: 'error' | 'info';
+  text: string;
+}
+
+export interface PlayContextOptions {
+  /** Canción por la que empezar. */
+  trackUri?: string;
+  /**
+   * Si Spotify rechaza el contexto, se reproducen estas URIs como lista suelta
+   * (útil para "Tus me gusta").
+   */
+  fallbackUris?: string[];
+}
+
 export interface PlayerContextValue {
   status: PlayerStatus;
   deviceId: string | null;
@@ -38,23 +65,37 @@ export interface PlayerContextValue {
   contextUri: string | null;
   snapshot: PositionSnapshot;
   volume: number;
+  shuffle: boolean;
+  repeatMode: RepeatMode;
   canSkipPrev: boolean;
   canSkipNext: boolean;
   canSeek: boolean;
-  error: string | null;
+  canShuffle: boolean;
+  canRepeat: boolean;
+  /** Aumenta cada vez que se agrega algo a la cola (para refrescar la vista de cola). */
+  queueVersion: number;
+  toast: Toast | null;
 
   togglePlay: () => void;
   next: () => void;
   previous: () => void;
   seek: (positionMs: number) => void;
+  /** Posición actual interpolada, sin provocar renders (para atajos de teclado). */
+  getPositionMs: () => number;
   setVolume: (volume: number) => void;
+  toggleMute: () => void;
+  toggleShuffle: () => void;
+  /** off → context → track → off */
+  cycleRepeat: () => void;
   /** Trae la reproducción a este navegador y la reanuda. */
   transferHere: () => void;
-  /** Reproduce una playlist/álbum, opcionalmente empezando por `trackUri`. */
-  playContext: (contextUri: string, trackUri?: string) => void;
+  /** Pasa la reproducción a otro dispositivo de Spotify Connect. */
+  transferTo: (deviceId: string) => void;
+  playContext: (contextUri: string, options?: PlayContextOptions) => void;
   /** Reproduce una lista suelta de canciones empezando por `startIndex`. */
   playTracks: (uris: string[], startIndex?: number) => void;
-  clearError: () => void;
+  addToQueue: (uri: string) => void;
+  dismissToast: () => void;
 }
 
 export const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -62,17 +103,37 @@ export const PlayerContext = createContext<PlayerContextValue | null>(null);
 // ── Provider ────────────────────────────────────────────────────────────────
 
 const EMPTY_SNAPSHOT: PositionSnapshot = { positionMs: 0, durationMs: 0, paused: true, takenAt: 0 };
+const TOAST_MS = { info: 2500, error: 8000 };
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const playerRef = useRef<Spotify.Player | null>(null);
   const transferredRef = useRef(false);
+  const snapshotRef = useRef(EMPTY_SNAPSHOT);
+  const volumeBeforeMuteRef = useRef(0.5);
 
   const [status, setStatus] = useState<PlayerStatus>('connecting');
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [state, setState] = useState<Spotify.PlaybackState | null>(null);
-  const [snapshot, setSnapshot] = useState<PositionSnapshot>(EMPTY_SNAPSHOT);
+  const [snapshot, setSnapshotState] = useState<PositionSnapshot>(EMPTY_SNAPSHOT);
   const [volume, setVolumeState] = useState(loadVolume);
-  const [error, setError] = useState<string | null>(null);
+  const [queueVersion, setQueueVersion] = useState(0);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const setSnapshot = useCallback((update: (prev: PositionSnapshot) => PositionSnapshot) => {
+    snapshotRef.current = update(snapshotRef.current);
+    setSnapshotState(snapshotRef.current);
+  }, []);
+
+  const notify = useCallback((kind: Toast['kind'], text: string) => {
+    setToast({ id: Date.now(), kind, text });
+  }, []);
+
+  // Los avisos se cierran solos.
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast((t) => (t?.id === toast.id ? null : t)), TOAST_MS[toast.kind]);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   // Inicializa el SDK una vez por sesión.
   useEffect(() => {
@@ -82,7 +143,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const fail = (message: string) => {
       if (cancelled) return;
       setStatus('error');
-      setError(message);
+      notify('error', message);
+    };
+    const warn = (message: string) => {
+      if (!cancelled) notify('error', message);
     };
 
     loadSpotifySdk()
@@ -107,7 +171,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           setStatus('ready');
           if (!transferredRef.current) {
             transferredRef.current = true;
-            transferWithRetry(device_id).catch((err) => setError(describeError(err)));
+            transferWithRetry(device_id).catch((err) => warn(describeError(err)));
           }
         });
         player.addListener('not_ready', () => {
@@ -116,7 +180,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         player.addListener('player_state_changed', (s) => {
           if (cancelled) return;
           setState(s);
-          setSnapshot(
+          setSnapshot(() =>
             s
               ? { positionMs: s.position, durationMs: s.duration, paused: s.paused, takenAt: Date.now() }
               : EMPTY_SNAPSHOT,
@@ -126,18 +190,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           fail(`Este navegador no puede reproducir: ${e.message}`),
         );
         // No es fatal: el SDK vuelve a pedir el token con getOAuthToken.
-        player.addListener('authentication_error', (e) => {
-          if (!cancelled) setError(`Error de autenticación del reproductor: ${e.message}`);
-        });
+        player.addListener('authentication_error', (e) =>
+          warn(`Error de autenticación del reproductor: ${e.message}`),
+        );
         player.addListener('account_error', () =>
           fail('Se necesita Spotify Premium para reproducir en el navegador.'),
         );
-        player.addListener('playback_error', (e) => {
-          if (!cancelled) setError(`Error de reproducción: ${e.message}`);
-        });
-        player.addListener('autoplay_failed', () => {
-          if (!cancelled) setError('El navegador bloqueó la reproducción automática. Tocá play.');
-        });
+        player.addListener('playback_error', (e) => warn(`Error de reproducción: ${e.message}`));
+        player.addListener('autoplay_failed', () =>
+          warn('El navegador bloqueó la reproducción automática. Tocá play.'),
+        );
 
         const connected = await player.connect();
         if (!connected) fail('No se pudo conectar el reproductor.');
@@ -149,41 +211,58 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       player?.disconnect();
       playerRef.current = null;
     };
-  }, []);
+  }, [notify, setSnapshot]);
 
-  /** Ejecuta una acción mostrando el error en la UI si falla. */
-  const run = useCallback((action: (player: Spotify.Player) => Promise<unknown>) => {
-    const player = playerRef.current;
-    if (!player) {
-      setError('El reproductor todavía no está listo.');
-      return;
-    }
-    // activateElement() tiene que ejecutarse de forma síncrona dentro del click
-    // para que el navegador permita reproducir audio.
-    void player.activateElement();
-    action(player).catch((err) => setError(describeError(err)));
-  }, []);
+  /**
+   * Ejecuta una acción mostrando el error en la UI si falla. Llama a
+   * activateElement() de forma síncrona: tiene que ocurrir dentro del click para
+   * que el navegador permita reproducir audio.
+   */
+  const run = useCallback(
+    (action: () => Promise<unknown>, successText?: string) => {
+      void playerRef.current?.activateElement();
+      action()
+        .then(() => successText && notify('info', successText))
+        .catch((err) => notify('error', describeError(err)));
+    },
+    [notify],
+  );
+
+  const requirePlayer = (): Spotify.Player => {
+    if (!playerRef.current) throw new Error('El reproductor todavía no está listo.');
+    return playerRef.current;
+  };
+  const requireDevice = useCallback((): string => {
+    if (!deviceId) throw new Error('El reproductor todavía no está listo.');
+    return deviceId;
+  }, [deviceId]);
 
   const isActive = state !== null;
 
   const togglePlay = useCallback(() => {
-    run(async (player) => {
-      if (!isActive && deviceId) await transferPlayback(deviceId, true);
-      else await player.togglePlay();
+    run(async () => {
+      if (!isActive) await transferPlayback(requireDevice(), true);
+      else await requirePlayer().togglePlay();
     });
-  }, [run, isActive, deviceId]);
+  }, [run, isActive, requireDevice]);
 
-  const next = useCallback(() => run((p) => p.nextTrack()), [run]);
-  const previous = useCallback(() => run((p) => p.previousTrack()), [run]);
+  const next = useCallback(() => run(() => requirePlayer().nextTrack()), [run]);
+  const previous = useCallback(() => run(() => requirePlayer().previousTrack()), [run]);
 
   const seek = useCallback(
     (positionMs: number) => {
       // Actualización optimista: la barra no "salta" mientras llega el nuevo estado.
       setSnapshot((s) => ({ ...s, positionMs, takenAt: Date.now() }));
-      run((p) => p.seek(positionMs));
+      run(() => requirePlayer().seek(positionMs));
     },
-    [run],
+    [run, setSnapshot],
   );
+
+  const getPositionMs = useCallback(() => {
+    const s = snapshotRef.current;
+    const elapsed = s.paused ? 0 : Date.now() - s.takenAt;
+    return Math.min(s.positionMs + elapsed, s.durationMs);
+  }, []);
 
   const setVolume = useCallback((value: number) => {
     const v = Math.min(1, Math.max(0, value));
@@ -192,38 +271,74 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     playerRef.current?.setVolume(v).catch(() => {});
   }, []);
 
-  const transferHere = useCallback(() => {
-    run(async () => {
-      if (!deviceId) throw new Error('El reproductor todavía no está listo.');
-      await transferPlayback(deviceId, true);
-    });
-  }, [run, deviceId]);
+  const toggleMute = useCallback(() => {
+    if (volume > 0) {
+      volumeBeforeMuteRef.current = volume;
+      setVolume(0);
+    } else {
+      setVolume(volumeBeforeMuteRef.current || 0.5);
+    }
+  }, [volume, setVolume]);
 
-  const playContext = useCallback(
-    (contextUri: string, trackUri?: string) => {
-      run(async () => {
-        if (!deviceId) throw new Error('El reproductor todavía no está listo.');
-        await startPlayback({
-          deviceId,
-          contextUri,
-          offset: trackUri ? { uri: trackUri } : undefined,
-        });
-      });
-    },
-    [run, deviceId],
+  const shuffle = state?.shuffle ?? false;
+  const repeatMode = REPEAT_MODES[state?.repeat_mode ?? 0];
+
+  const toggleShuffle = useCallback(() => run(() => setShuffle(!shuffle)), [run, shuffle]);
+
+  const cycleRepeat = useCallback(() => {
+    const nextMode = REPEAT_MODES[(REPEAT_MODES.indexOf(repeatMode) + 1) % REPEAT_MODES.length];
+    run(() => setRepeat(nextMode));
+  }, [run, repeatMode]);
+
+  const transferTo = useCallback(
+    (targetId: string) => run(() => transferPlayback(targetId, true)),
+    [run],
+  );
+
+  const transferHere = useCallback(
+    () => run(() => transferPlayback(requireDevice(), true)),
+    [run, requireDevice],
   );
 
   const playTracks = useCallback(
     (uris: string[], startIndex = 0) => {
-      run(async () => {
-        if (!deviceId) throw new Error('El reproductor todavía no está listo.');
-        await startPlayback({ deviceId, uris, offset: { position: startIndex } });
-      });
+      run(() => startUris(requireDevice(), uris, startIndex));
     },
-    [run, deviceId],
+    [run, requireDevice],
   );
 
-  const clearError = useCallback(() => setError(null), []);
+  const playContext = useCallback(
+    (contextUri: string, { trackUri, fallbackUris }: PlayContextOptions = {}) => {
+      run(async () => {
+        const id = requireDevice();
+        try {
+          await startPlayback({
+            deviceId: id,
+            contextUri,
+            offset: trackUri ? { uri: trackUri } : undefined,
+          });
+        } catch (err) {
+          const rejected =
+            err instanceof SpotifyApiError && err.status >= 400 && err.status < 500 && err.status !== 429;
+          if (!fallbackUris?.length || !rejected) throw err;
+          await startUris(id, fallbackUris, trackUri ? Math.max(0, fallbackUris.indexOf(trackUri)) : 0);
+        }
+      });
+    },
+    [run, requireDevice],
+  );
+
+  const addToQueue = useCallback(
+    (uri: string) => {
+      run(async () => {
+        await apiAddToQueue(uri);
+        setQueueVersion((v) => v + 1);
+      }, 'Agregada a la cola');
+    },
+    [run],
+  );
+
+  const dismissToast = useCallback(() => setToast(null), []);
 
   const value = useMemo<PlayerContextValue>(() => {
     const current = state?.track_window.current_track ?? null;
@@ -237,29 +352,51 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       contextUri: state?.context.uri ?? null,
       snapshot,
       volume,
+      shuffle,
+      repeatMode,
       canSkipPrev: isActive && !disallows.skipping_prev,
       canSkipNext: isActive && !disallows.skipping_next,
       canSeek: isActive && !disallows.seeking,
-      error,
+      canShuffle: isActive && !disallows.toggling_shuffle,
+      canRepeat: isActive && !(disallows.toggling_repeat_context && disallows.toggling_repeat_track),
+      queueVersion,
+      toast,
       togglePlay,
       next,
       previous,
       seek,
+      getPositionMs,
       setVolume,
+      toggleMute,
+      toggleShuffle,
+      cycleRepeat,
       transferHere,
+      transferTo,
       playContext,
       playTracks,
-      clearError,
+      addToQueue,
+      dismissToast,
     };
   }, [
-    status, deviceId, isActive, state, snapshot, volume, error,
-    togglePlay, next, previous, seek, setVolume, transferHere, playContext, playTracks, clearError,
+    status, deviceId, isActive, state, snapshot, volume, shuffle, repeatMode, queueVersion, toast,
+    togglePlay, next, previous, seek, getPositionMs, setVolume, toggleMute, toggleShuffle,
+    cycleRepeat, transferHere, transferTo, playContext, playTracks, addToQueue, dismissToast,
   ]);
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Reproduce URIs sueltas, recortando a una ventana de MAX_URIS alrededor del inicio. */
+function startUris(deviceId: string, uris: string[], startIndex: number): Promise<null> {
+  const from = Math.max(0, Math.min(startIndex, uris.length - MAX_URIS));
+  return startPlayback({
+    deviceId,
+    uris: uris.slice(from, from + MAX_URIS),
+    offset: { position: startIndex - from },
+  });
+}
 
 /**
  * Justo después de `ready`, la Web API a veces todavía no conoce el dispositivo

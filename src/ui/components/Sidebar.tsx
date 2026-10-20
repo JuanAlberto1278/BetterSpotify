@@ -1,55 +1,58 @@
-import type { SimplifiedPlaylist } from '../../api/types';
 import { useAuth } from '../../auth/AuthProvider';
 import { usePlaylists } from '../../data/useLibrary';
+import { SHORTCUTS } from '../../player/useKeyboardShortcuts';
+import { navigate } from '../../router/router';
+import { paths, type Route } from '../../router/routes';
 import { pickImage } from '../images';
 import LoadMoreSentinel from './LoadMoreSentinel';
 import styles from './Sidebar.module.css';
 
-interface Props {
-  selectedPlaylistId: string | null;
-  searchActive: boolean;
-  onSelectPlaylist: (playlist: SimplifiedPlaylist) => void;
-  onOpenSearch: () => void;
-}
-
-export default function Sidebar({ selectedPlaylistId, searchActive, onSelectPlaylist, onOpenSearch }: Props) {
+export default function Sidebar({ route }: { route: Route }) {
   const { user, logout } = useAuth();
   const playlists = usePlaylists();
+
+  const itemClass = (active: boolean) => `${styles.item} ${active ? styles.active : ''}`;
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.user}>
-        <span className={styles.userName}>{user?.display_name ?? user?.id ?? '…'}</span>
+        <button className={styles.userName} onClick={() => navigate(paths.home())}>
+          {user?.display_name ?? user?.id ?? '…'}
+        </button>
         <button className={styles.link} onClick={logout}>
           Salir
         </button>
       </div>
 
-      <button
-        className={`${styles.item} ${searchActive ? styles.active : ''}`}
-        onClick={onOpenSearch}
-      >
-        🔍 Buscar
+      <button className={itemClass(route.name === 'search')} onClick={() => navigate(paths.search())}>
+        <span className={styles.icon}>🔍</span> Buscar
+      </button>
+      <button className={itemClass(route.name === 'liked')} onClick={() => navigate(paths.liked())}>
+        <span className={`${styles.cover} ${styles.likedCover}`}>♥</span>
+        <span className={styles.name}>Tus me gusta</span>
       </button>
 
       <h2 className={styles.heading}>Tus playlists</h2>
       <ul className={styles.list}>
-        {playlists.items.map((playlist) => (
-          <li key={playlist.id}>
-            <button
-              className={`${styles.item} ${playlist.id === selectedPlaylistId ? styles.active : ''}`}
-              onClick={() => onSelectPlaylist(playlist)}
-              title={playlist.name}
-            >
-              {pickImage(playlist.images, 40) ? (
-                <img className={styles.cover} src={pickImage(playlist.images, 40)!} alt="" loading="lazy" />
-              ) : (
-                <div className={styles.cover} />
-              )}
-              <span className={styles.name}>{playlist.name}</span>
-            </button>
-          </li>
-        ))}
+        {playlists.items.map((playlist) => {
+          const cover = pickImage(playlist.images, 40);
+          return (
+            <li key={playlist.id}>
+              <button
+                className={itemClass(route.name === 'playlist' && route.id === playlist.id)}
+                onClick={() => navigate(paths.playlist(playlist.id))}
+                title={playlist.name}
+              >
+                {cover ? (
+                  <img className={styles.cover} src={cover} alt="" loading="lazy" />
+                ) : (
+                  <div className={styles.cover} />
+                )}
+                <span className={styles.name}>{playlist.name}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       {playlists.loading && <p className={styles.status}>Cargando…</p>}
@@ -64,6 +67,18 @@ export default function Sidebar({ selectedPlaylistId, searchActive, onSelectPlay
       {playlists.hasMore && !playlists.error && (
         <LoadMoreSentinel onVisible={playlists.loadMore} disabled={playlists.loading} />
       )}
+
+      <details className={styles.shortcuts}>
+        <summary>Atajos de teclado</summary>
+        <dl>
+          {SHORTCUTS.map(({ keys, action }) => (
+            <div key={keys} className={styles.shortcut}>
+              <dt>{keys}</dt>
+              <dd>{action}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
     </aside>
   );
 }

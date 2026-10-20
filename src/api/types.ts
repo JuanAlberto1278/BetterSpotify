@@ -53,6 +53,29 @@ export interface Episode {
   uri: string;
   name: string;
   duration_ms: number;
+  images?: SpotifyImage[];
+  show?: { name: string };
+}
+
+/** Elemento de /me/tracks. Se acepta `item` por si se unifica con el formato de playlists. */
+export interface SavedTrack {
+  added_at: string;
+  track?: Track | null;
+  item?: Track | null;
+}
+
+export interface Device {
+  id: string | null;
+  name: string;
+  type: string;
+  is_active: boolean;
+  is_restricted: boolean;
+  volume_percent: number | null;
+}
+
+export interface Queue {
+  currently_playing: Track | Episode | null;
+  queue: (Track | Episode)[];
 }
 
 /** Elemento de /playlists/{id}/items. Desde 2026 el contenido viene en `item` (antes `track`). */
@@ -70,7 +93,4 @@ export interface SimplifiedPlaylist {
   images: SpotifyImage[] | null;
   owner: { id: string; display_name: string | null };
   collaborative: boolean;
-  /** Cantidad de elementos; según la versión de la API viene en `items` o en `tracks`. */
-  items?: { total: number };
-  tracks?: { total: number };
 }

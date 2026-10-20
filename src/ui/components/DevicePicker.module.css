@@ -1,0 +1,101 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  z-index: 10;
+  width: 280px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #282828;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.6);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem 0.5rem;
+  font-weight: 700;
+}
+
+.refresh {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.device {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.device:not(:disabled):hover {
+  background: #3e3e3e;
+}
+
+.device:disabled {
+  opacity: 1;
+}
+
+.active {
+  color: var(--accent);
+}
+
+.icon {
+  width: 1.5rem;
+  text-align: center;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.name small {
+  color: var(--text-muted);
+}
+
+.badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.status {
+  margin: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.error {
+  margin: 0.5rem;
+  color: var(--danger);
+  font-size: 0.9rem;
+}

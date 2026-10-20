@@ -1,21 +1,34 @@
 import { usePlayer } from '../../player/usePlayer';
+import DevicePicker from './DevicePicker';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import styles from './PlayerBar.module.css';
 
-export default function PlayerBar() {
+const REPEAT_LABEL = { off: 'Repetir: no', context: 'Repetir: todo', track: 'Repetir: canción' };
+
+interface Props {
+  queueOpen: boolean;
+  onToggleQueue: () => void;
+}
+
+export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
   const {
-    status, isActive, paused, track, error,
-    canSkipPrev, canSkipNext,
-    togglePlay, next, previous, transferHere, clearError,
+    status, isActive, paused, track, toast,
+    shuffle, repeatMode,
+    canSkipPrev, canSkipNext, canShuffle, canRepeat,
+    togglePlay, next, previous, toggleShuffle, cycleRepeat, transferHere, dismissToast,
   } = usePlayer();
 
   return (
     <footer className={styles.bar}>
-      {error && (
-        <div className={styles.error} role="alert">
-          <span>{error}</span>
-          <button className={styles.iconButton} onClick={clearError} aria-label="Cerrar">
+      {toast && (
+        <div
+          key={toast.id}
+          className={`${styles.toast} ${toast.kind === 'error' ? styles.toastError : ''}`}
+          role={toast.kind === 'error' ? 'alert' : 'status'}
+        >
+          <span>{toast.text}</span>
+          <button className={styles.iconButton} onClick={dismissToast} aria-label="Cerrar">
             ✕
           </button>
         </div>
@@ -41,10 +54,21 @@ export default function PlayerBar() {
         ) : (
           <div className={styles.controls}>
             <button
+              className={`${styles.iconButton} ${shuffle ? styles.on : ''}`}
+              onClick={toggleShuffle}
+              disabled={!canShuffle}
+              aria-label="Aleatorio"
+              aria-pressed={shuffle}
+              title="Aleatorio (S)"
+            >
+              🔀
+            </button>
+            <button
               className={styles.iconButton}
               onClick={previous}
               disabled={!canSkipPrev}
               aria-label="Anterior"
+              title="Anterior (Shift + ←)"
             >
               ⏮
             </button>
@@ -53,6 +77,7 @@ export default function PlayerBar() {
               onClick={togglePlay}
               disabled={status !== 'ready'}
               aria-label={paused ? 'Reproducir' : 'Pausar'}
+              title="Reproducir / pausar (Espacio)"
             >
               {paused ? '▶' : '⏸'}
             </button>
@@ -61,15 +86,37 @@ export default function PlayerBar() {
               onClick={next}
               disabled={!canSkipNext}
               aria-label="Siguiente"
+              title="Siguiente (Shift + →)"
             >
               ⏭
+            </button>
+            <button
+              className={`${styles.iconButton} ${repeatMode !== 'off' ? styles.on : ''}`}
+              onClick={cycleRepeat}
+              disabled={!canRepeat}
+              aria-label={REPEAT_LABEL[repeatMode]}
+              title={`${REPEAT_LABEL[repeatMode]} (R)`}
+            >
+              {repeatMode === 'track' ? '🔂' : '🔁'}
             </button>
           </div>
         )}
         <ProgressBar />
       </div>
 
-      <VolumeControl />
+      <div className={styles.right}>
+        <button
+          className={`${styles.iconButton} ${queueOpen ? styles.on : ''}`}
+          onClick={onToggleQueue}
+          aria-label="Cola de reproducción"
+          aria-pressed={queueOpen}
+          title="Cola (Q)"
+        >
+          ☰
+        </button>
+        <DevicePicker />
+        <VolumeControl />
+      </div>
     </footer>
   );
 }

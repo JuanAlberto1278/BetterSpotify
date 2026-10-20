@@ -20,7 +20,55 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
   font-weight: 600;
+}
+
+.icon {
+  width: 40px;
+  text-align: center;
+}
+
+.likedCover {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #450af5, #c4efd9);
+  color: #fff;
+}
+
+.shortcuts {
+  margin-top: auto;
+  padding: 1rem 0.5rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.shortcuts summary {
+  cursor: pointer;
+}
+
+.shortcuts dl {
+  margin: 0.5rem 0 0;
+}
+
+.shortcut {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+}
+
+.shortcut dt {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.shortcut dd {
+  margin: 0;
+  text-align: right;
 }
 
 .link {

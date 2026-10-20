@@ -8,8 +8,19 @@
     'player player';
 }
 
-.layout > aside {
+.withQueue {
+  grid-template-columns: 260px minmax(0, 1fr) 300px;
+  grid-template-areas:
+    'sidebar content queue'
+    'player player player';
+}
+
+.layout > aside:first-child {
   grid-area: sidebar;
+}
+
+.layout > aside:not(:first-child) {
+  grid-area: queue;
 }
 
 .layout > footer {
@@ -31,8 +42,15 @@
   color: var(--text-muted);
 }
 
+@media (max-width: 1000px) {
+  .withQueue {
+    grid-template-columns: 220px minmax(0, 1fr) 260px;
+  }
+}
+
 @media (max-width: 700px) {
-  .layout {
+  .layout,
+  .withQueue {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -41,8 +59,17 @@
       'player';
   }
 
-  .layout > aside {
+  .layout > aside:first-child {
     max-height: 35vh;
+  }
+
+  /* En pantallas chicas la cola reemplaza al contenido. */
+  .withQueue > main {
+    display: none;
+  }
+
+  .withQueue > aside:not(:first-child) {
+    grid-area: content;
   }
 
   .content {
