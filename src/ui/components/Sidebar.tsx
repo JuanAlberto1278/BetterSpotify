@@ -3,7 +3,7 @@ import { usePlaylists } from '../../data/useLibrary';
 import { SHORTCUTS } from '../../player/useKeyboardShortcuts';
 import { navigate } from '../../router/router';
 import { paths, type Route } from '../../router/routes';
-import { HeartIcon, SearchIcon } from '../icons';
+import { DiscIcon, HeartIcon, SearchIcon } from '../icons';
 import { pickImage } from '../images';
 import LoadMoreSentinel from './LoadMoreSentinel';
 import styles from './Sidebar.module.css';
@@ -36,6 +36,12 @@ export default function Sidebar({ route }: { route: Route }) {
           <HeartIcon size={18} />
         </span>
         <span className={styles.name}>Tus me gusta</span>
+      </button>
+      <button className={itemClass(route.name === 'savedAlbums')} onClick={() => navigate(paths.savedAlbums())}>
+        <span className={`${styles.cover} ${styles.likedCover}`}>
+          <DiscIcon size={18} />
+        </span>
+        <span className={styles.name}>Tus álbumes</span>
       </button>
 
       <h2 className={styles.heading}>Tus playlists</h2>

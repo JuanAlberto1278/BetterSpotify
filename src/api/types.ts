@@ -102,6 +102,13 @@ export interface SavedTrack {
   item?: Track | null;
 }
 
+/** Elemento de /me/albums. Se acepta `item` por si se unifica con el formato de playlists. */
+export interface SavedAlbum {
+  added_at: string;
+  album?: AlbumSummary | null;
+  item?: AlbumSummary | null;
+}
+
 export interface Device {
   id: string | null;
   name: string;

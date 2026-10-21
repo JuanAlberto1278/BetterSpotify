@@ -11,10 +11,12 @@ import styles from './AlbumGrid.module.css';
 interface Props {
   list: PagedList<AlbumSummary>;
   emptyText?: string;
+  /** Qué mostrar debajo del nombre: "año · tipo" (discografía) o los artistas (biblioteca). */
+  subtitle?: 'release' | 'artists';
 }
 
 /** Grilla de álbumes con scroll infinito. */
-export default function AlbumGrid({ list, emptyText = 'No hay nada para mostrar.' }: Props) {
+export default function AlbumGrid({ list, emptyText = 'No hay nada para mostrar.', subtitle = 'release' }: Props) {
   const { items, loading, error, hasMore, loadMore } = list;
 
   return (
@@ -35,7 +37,9 @@ export default function AlbumGrid({ list, emptyText = 'No hay nada para mostrar.
                   )}
                   <span className={styles.name}>{album.name}</span>
                   <span className={styles.meta}>
-                    {album.release_date.slice(0, 4)} · {ALBUM_TYPE_LABEL[album.album_type] ?? 'Álbum'}
+                    {subtitle === 'artists'
+                      ? album.artists.map((a) => a.name).join(', ')
+                      : `${album.release_date.slice(0, 4)} · ${ALBUM_TYPE_LABEL[album.album_type] ?? 'Álbum'}`}
                   </span>
                 </Link>
               </li>

@@ -10,6 +10,7 @@ import LikedView from '../components/LikedView';
 import PlayerBar from '../components/PlayerBar';
 import PlaylistView from '../components/PlaylistView';
 import QueuePanel from '../components/QueuePanel';
+import SavedAlbumsView from '../components/SavedAlbumsView';
 import SearchView, { SEARCH_INPUT_ID } from '../components/SearchView';
 import Sidebar from '../components/Sidebar';
 import styles from './MainLayout.module.css';
@@ -38,6 +39,7 @@ export default function MainLayout({ route }: { route: Route }) {
         <ErrorBoundary resetKey={route} title="No se pudo mostrar esta vista">
           {route.name === 'search' && <SearchView query={route.query} />}
           {route.name === 'liked' && <LikedView />}
+          {route.name === 'savedAlbums' && <SavedAlbumsView />}
           {route.name === 'playlist' && <PlaylistView key={route.id} playlistId={route.id} />}
           {route.name === 'album' && <AlbumView key={route.id} albumId={route.id} />}
           {route.name === 'artist' && <ArtistView key={route.id} artistId={route.id} />}

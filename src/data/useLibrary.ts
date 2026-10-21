@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { albumTracksAsTracks, getAlbum, getAlbumTracksPage } from '../api/albums';
 import { getArtist, getArtistAlbumsPage, type DiscographyGroup } from '../api/artists';
-import { getSavedTracksPage } from '../api/library';
+import { getSavedAlbumsPage, getSavedTracksPage } from '../api/library';
 import { getMyPlaylistsPage, getPlaylist, getPlaylistTracksPage } from '../api/playlists';
 import { searchTracksPage } from '../api/search';
 import type { Album, AlbumSummary, Artist, SimplifiedPlaylist, Track } from '../api/types';
@@ -45,6 +45,16 @@ export function useSavedTracks(): PagedList<Track> {
     const page = await getSavedTracksPage(url, signal);
     // Ya sabemos que están guardadas: evita consultar /me/library/contains.
     primeSaved(page.items.map((t) => t.uri));
+    return page;
+  }, []);
+  return usePagedList(fetchPage);
+}
+
+/** Tus álbumes guardados. */
+export function useSavedAlbums(): PagedList<AlbumSummary> {
+  const fetchPage = useCallback(async (url: string | null, signal: AbortSignal) => {
+    const page = await getSavedAlbumsPage(url, signal);
+    primeSaved(page.items.map((a) => a.uri));
     return page;
   }, []);
   return usePagedList(fetchPage);

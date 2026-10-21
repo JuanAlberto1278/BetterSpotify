@@ -45,6 +45,9 @@
 }
 
 .meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 0.85rem;
   color: var(--text-muted);
 }

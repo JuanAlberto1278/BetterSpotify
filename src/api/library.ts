@@ -1,5 +1,5 @@
 import { spotifyFetch } from './client';
-import type { Paging, SavedTrack, Track } from './types';
+import type { AlbumSummary, Paging, SavedAlbum, SavedTrack, Track } from './types';
 
 const PAGE_SIZE = 50;
 /** Máximo de URIs por llamada a /me/library. */
@@ -19,6 +19,23 @@ export async function getSavedTracksPage(
     items: page.items
       .map((entry) => entry.track ?? entry.item ?? null)
       .filter((t): t is Track => t?.type === 'track' && !t.is_local),
+  };
+}
+
+/** Una página de tus álbumes guardados. `url` = el `next` de la página anterior. */
+export async function getSavedAlbumsPage(
+  url: string | null,
+  signal?: AbortSignal,
+): Promise<Paging<AlbumSummary>> {
+  const page = await spotifyFetch<Paging<SavedAlbum>>(url ?? '/me/albums', {
+    query: url ? undefined : { limit: PAGE_SIZE },
+    signal,
+  });
+  return {
+    ...page,
+    items: page.items
+      .map((entry) => entry.album ?? entry.item ?? null)
+      .filter((album): album is AlbumSummary => album !== null),
   };
 }
 
