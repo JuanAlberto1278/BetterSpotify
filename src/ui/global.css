@@ -3,7 +3,13 @@
   --surface: #1e1e1e;
   --text: #f2f2f2;
   --text-muted: #a7a7a7;
-  --accent: #1ed760;
+  /* Color de marca: íconos activos, fondos de botones, barras y bordes. */
+  --accent: #0e5ced;
+  /* Mismo azul más claro, para texto coloreado sobre fondo oscuro (contraste AA). */
+  --accent-text: #568bf5;
+  /* Texto sobre fondo --accent. */
+  --on-accent: #fff;
+  --accent-gradient: linear-gradient(135deg, #0e5ced, #8ab4ff);
   --danger: #f15e6c;
 
   color-scheme: dark;

@@ -19,7 +19,7 @@
 }
 
 .current .name {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .playButton {

@@ -18,7 +18,7 @@
 .likedCover {
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #450af5, #c4efd9);
+  background: var(--accent-gradient);
   color: #fff;
 }
 
@@ -53,7 +53,7 @@
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: #000;
+  color: var(--on-accent);
   font-weight: 700;
 }
 

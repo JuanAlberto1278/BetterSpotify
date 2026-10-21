@@ -85,7 +85,7 @@
   border: 1px solid var(--accent);
   border-radius: 999px;
   background: none;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .progress {
@@ -160,8 +160,8 @@
   max-width: 90%;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  background: #3e7bf6;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .toast .iconButton {

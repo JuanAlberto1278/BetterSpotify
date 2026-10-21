@@ -70,7 +70,7 @@
 }
 
 .current .name {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Lo agregado a mano: marca a la izquierda, como un "pin". */

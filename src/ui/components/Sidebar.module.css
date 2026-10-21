@@ -42,7 +42,7 @@
 .likedCover {
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #450af5, #c4efd9);
+  background: var(--accent-gradient);
   color: #fff;
 }
 
