@@ -1,13 +1,20 @@
 import { usePlayer } from '../../player/usePlayer';
+import { VolumeIcon } from '../icons';
 import styles from './PlayerBar.module.css';
 
 export default function VolumeControl() {
   const { volume, setVolume, toggleMute } = usePlayer();
+  const muted = volume === 0;
 
   return (
     <div className={styles.volume}>
-      <button className={styles.iconButton} onClick={toggleMute} aria-label="Silenciar" title="Silenciar (M)">
-        {volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+      <button
+        className={styles.iconButton}
+        onClick={toggleMute}
+        aria-label={muted ? 'Activar sonido' : 'Silenciar'}
+        title={`${muted ? 'Activar sonido' : 'Silenciar'} (M)`}
+      >
+        <VolumeIcon level={volume} size={18} />
       </button>
       <input
         type="range"

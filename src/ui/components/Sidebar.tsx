@@ -1,8 +1,9 @@
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/useAuth';
 import { usePlaylists } from '../../data/useLibrary';
 import { SHORTCUTS } from '../../player/useKeyboardShortcuts';
 import { navigate } from '../../router/router';
 import { paths, type Route } from '../../router/routes';
+import { HeartIcon, SearchIcon } from '../icons';
 import { pickImage } from '../images';
 import LoadMoreSentinel from './LoadMoreSentinel';
 import styles from './Sidebar.module.css';
@@ -25,10 +26,15 @@ export default function Sidebar({ route }: { route: Route }) {
       </div>
 
       <button className={itemClass(route.name === 'search')} onClick={() => navigate(paths.search())}>
-        <span className={styles.icon}>🔍</span> Buscar
+        <span className={styles.icon}>
+          <SearchIcon size={22} />
+        </span>
+        Buscar
       </button>
       <button className={itemClass(route.name === 'liked')} onClick={() => navigate(paths.liked())}>
-        <span className={`${styles.cover} ${styles.likedCover}`}>♥</span>
+        <span className={`${styles.cover} ${styles.likedCover}`}>
+          <HeartIcon size={18} />
+        </span>
         <span className={styles.name}>Tus me gusta</span>
       </button>
 

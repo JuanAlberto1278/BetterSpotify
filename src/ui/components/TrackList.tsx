@@ -2,6 +2,7 @@ import type { Track } from '../../api/types';
 import type { PagedList } from '../../data/usePagedList';
 import { usePlayer } from '../../player/usePlayer';
 import { formatDuration } from '../format';
+import { EqualizerIcon, PlayIcon, PlusIcon } from '../icons';
 import { pickImage } from '../images';
 import LoadMoreSentinel from './LoadMoreSentinel';
 import styles from './TrackList.module.css';
@@ -36,8 +37,12 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                   onClick={() => onPlay(index)}
                   aria-label={`Reproducir ${track.name}`}
                 >
-                  <span className={styles.number}>{isCurrent && !paused ? '♪' : index + 1}</span>
-                  <span className={styles.playIcon}>▶</span>
+                  <span className={styles.number}>
+                    {isCurrent && !paused ? <EqualizerIcon size={14} /> : index + 1}
+                  </span>
+                  <span className={styles.playIcon}>
+                    <PlayIcon size={14} />
+                  </span>
                 </button>
                 {cover ? (
                   <img className={styles.cover} src={cover} alt="" loading="lazy" />
@@ -58,7 +63,7 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                   aria-label={`Agregar ${track.name} a la cola`}
                   title="Agregar a la cola"
                 >
-                  ＋
+                  <PlusIcon size={16} />
                 </button>
                 <div className={styles.duration}>{formatDuration(track.duration_ms)}</div>
               </li>

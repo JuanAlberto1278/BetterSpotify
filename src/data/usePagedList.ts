@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { describeError } from '../api/errors';
 import type { Paging } from '../api/types';
 
@@ -14,15 +14,19 @@ export interface PagedList<T> {
   reload: () => void;
 }
 
-interface State<T> {
+interface Request<T> {
+  fetchPage: PageFetcher<T>;
+}
+
+interface Loaded<T> {
+  /** Pedido al que corresponden estos datos. */
+  request: Request<T>;
   items: T[];
   next: string | null;
   total: number | null;
-  loading: boolean;
   error: string | null;
+  loadingMore: boolean;
 }
-
-const IDLE: State<never> = { items: [], next: null, total: null, loading: false, error: null };
 
 /**
  * Lista paginada de la Web API. Carga la primera página cada vez que cambia
@@ -30,66 +34,76 @@ const IDLE: State<never> = { items: [], next: null, total: null, loading: false,
  * Pasar null deja la lista vacía sin pedir nada.
  */
 export function usePagedList<T>(fetchPage: PageFetcher<T> | null): PagedList<T> {
-  const [state, setState] = useState<State<T>>(IDLE);
   const [reloadKey, setReloadKey] = useState(0);
+  const request = useMemo<Request<T> | null>(
+    () => (fetchPage ? { fetchPage, reloadKey } : null),
+    [fetchPage, reloadKey],
+  );
+  const [loaded, setLoaded] = useState<Loaded<T> | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
-  const loadingRef = useRef(false);
+  const loadingMoreRef = useRef(false);
 
+  // Primera página.
   useEffect(() => {
-    if (!fetchPage) {
-      setState(IDLE);
-      return;
-    }
+    if (!request) return;
     const controller = new AbortController();
     controllerRef.current = controller;
-    loadingRef.current = true;
-    setState({ ...IDLE, loading: true });
-
-    fetchPage(null, controller.signal)
+    request
+      .fetchPage(null, controller.signal)
       .then((page) => {
-        setState({ items: page.items, next: page.next, total: page.total, loading: false, error: null });
+        if (controller.signal.aborted) return;
+        setLoaded({
+          request,
+          items: page.items,
+          next: page.next,
+          total: page.total,
+          error: null,
+          loadingMore: false,
+        });
       })
       .catch((err) => {
-        if (!controller.signal.aborted) setState({ ...IDLE, error: describeError(err) });
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) loadingRef.current = false;
+        if (controller.signal.aborted) return;
+        setLoaded({ request, items: [], next: null, total: null, error: describeError(err), loadingMore: false });
       });
+    return () => controller.abort();
+  }, [request]);
 
-    return () => {
-      controller.abort();
-      loadingRef.current = false;
-    };
-  }, [fetchPage, reloadKey]);
+  // Solo se muestran datos del pedido actual (al cambiar de playlist no se ve la anterior).
+  const current = loaded && request && loaded.request === request ? loaded : null;
 
   const loadMore = useCallback(() => {
     const controller = controllerRef.current;
-    if (!fetchPage || !controller || !state.next || loadingRef.current) return;
-    loadingRef.current = true;
-    setState((s) => ({ ...s, loading: true, error: null }));
+    if (!request || !current?.next || !controller || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
 
-    fetchPage(state.next, controller.signal)
+    // Solo se aplican cambios si la lista sigue siendo la del mismo pedido.
+    const update = (fn: (l: Loaded<T>) => Loaded<T>) =>
+      setLoaded((l) => (l && l.request === request ? fn(l) : l));
+
+    update((l) => ({ ...l, loadingMore: true, error: null }));
+    request
+      .fetchPage(current.next, controller.signal)
       .then((page) => {
-        setState((s) => ({ ...s, items: [...s.items, ...page.items], next: page.next, loading: false }));
+        if (controller.signal.aborted) return;
+        update((l) => ({ ...l, items: [...l.items, ...page.items], next: page.next, loadingMore: false }));
       })
       .catch((err) => {
-        if (!controller.signal.aborted) {
-          setState((s) => ({ ...s, loading: false, error: describeError(err) }));
-        }
+        if (controller.signal.aborted) return;
+        update((l) => ({ ...l, loadingMore: false, error: describeError(err) }));
       })
       .finally(() => {
-        if (!controller.signal.aborted) loadingRef.current = false;
+        loadingMoreRef.current = false;
       });
-  }, [fetchPage, state.next]);
+  }, [request, current]);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   return {
-    items: state.items,
-    total: state.total,
-    loading: state.loading,
-    error: state.error,
-    hasMore: state.next !== null,
+    items: current?.items ?? [],
+    total: current?.total ?? null,
+    loading: request !== null && (!current || current.loadingMore),
+    error: current?.error ?? null,
+    hasMore: Boolean(current?.next),
     loadMore,
     reload,
   };

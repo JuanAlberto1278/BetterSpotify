@@ -1,7 +1,8 @@
 import { savedTracksContextUri } from '../../api/library';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/useAuth';
 import { useSavedTracks } from '../../data/useLibrary';
 import { usePlayer } from '../../player/usePlayer';
+import { HeartIcon, PlayIcon } from '../icons';
 import TrackList from './TrackList';
 import styles from './View.module.css';
 
@@ -27,13 +28,15 @@ export default function LikedView() {
   return (
     <section>
       <header className={styles.header}>
-        <div className={`${styles.cover} ${styles.likedCover}`}>♥</div>
+        <div className={`${styles.cover} ${styles.likedCover}`}>
+          <HeartIcon size={64} />
+        </div>
         <div>
           <p className={styles.kicker}>Playlist</p>
           <h1 className={styles.title}>Tus me gusta</h1>
           <p className={styles.meta}>{tracks.total !== null && `${tracks.total} canciones`}</p>
           <button className={styles.playAll} onClick={() => play()} disabled={tracks.items.length === 0}>
-            ▶ Reproducir
+            <PlayIcon size={16} /> Reproducir
           </button>
         </div>
       </header>

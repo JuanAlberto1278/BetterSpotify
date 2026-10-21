@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { PlayerContext, type PlayerContextValue } from './PlayerProvider';
+import { PlayerContext, type PlayerContextValue } from './playerContext';
 
 export function usePlayer(): PlayerContextValue {
   const ctx = useContext(PlayerContext);
@@ -17,8 +17,9 @@ export function usePlaybackPosition(): { positionMs: number; durationMs: number 
   const { snapshot } = usePlayer();
   const [now, setNow] = useState(Date.now);
 
+  // Si `now` quedó viejo respecto de la foto nueva, el Math.max de abajo lo
+  // compensa hasta el próximo tick; no hace falta actualizarlo acá.
   useEffect(() => {
-    setNow(Date.now());
     if (snapshot.paused) return;
     const id = setInterval(() => setNow(Date.now()), TICK_MS);
     return () => clearInterval(id);

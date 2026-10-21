@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/useAuth';
 import { useKeyboardShortcuts } from '../../player/useKeyboardShortcuts';
 import { navigate } from '../../router/router';
 import { paths, type Route } from '../../router/routes';
+import ErrorBoundary from '../components/ErrorBoundary';
 import LikedView from '../components/LikedView';
 import PlayerBar from '../components/PlayerBar';
 import PlaylistView from '../components/PlaylistView';
@@ -31,22 +32,31 @@ export default function MainLayout({ route }: { route: Route }) {
       <main className={styles.content}>
         {userError && <p className={styles.error}>{userError}</p>}
 
-        {route.name === 'search' && <SearchView query={route.query} />}
-        {route.name === 'liked' && <LikedView />}
-        {route.name === 'playlist' && <PlaylistView key={route.id} playlistId={route.id} />}
-        {(route.name === 'home' || route.name === 'notFound' || route.name === 'callback') && (
-          <>
-            <h1>Hola{user?.display_name ? `, ${user.display_name}` : ''}</h1>
-            <p className={styles.placeholder}>
-              {route.name === 'notFound'
-                ? 'Esa página no existe.'
-                : 'Elegí una playlist o buscá una canción.'}
-            </p>
-          </>
-        )}
+        {/* Un error en una vista no tumba el reproductor; al navegar se reintenta. */}
+        <ErrorBoundary resetKey={route} title="No se pudo mostrar esta vista">
+          {route.name === 'search' && <SearchView query={route.query} />}
+          {route.name === 'liked' && <LikedView />}
+          {route.name === 'playlist' && <PlaylistView key={route.id} playlistId={route.id} />}
+          {(route.name === 'home' || route.name === 'notFound' || route.name === 'callback') && (
+            <>
+              <h1>Hola{user?.display_name ? `, ${user.display_name}` : ''}</h1>
+              <p className={styles.placeholder}>
+                {route.name === 'notFound'
+                  ? 'Esa página no existe.'
+                  : 'Elegí una playlist o buscá una canción.'}
+              </p>
+            </>
+          )}
+        </ErrorBoundary>
       </main>
 
-      {queueOpen && <QueuePanel onClose={() => setQueueOpen(false)} />}
+      {queueOpen && (
+        <div className={styles.queueSlot}>
+          <ErrorBoundary title="No se pudo mostrar la cola">
+            <QueuePanel onClose={() => setQueueOpen(false)} />
+          </ErrorBoundary>
+        </div>
+      )}
 
       <PlayerBar queueOpen={queueOpen} onToggleQueue={toggleQueue} />
     </div>

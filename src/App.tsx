@@ -1,4 +1,4 @@
-import { useAuth } from './auth/AuthProvider';
+import { useAuth } from './auth/useAuth';
 import { PlayerProvider } from './player/PlayerProvider';
 import { navigate, useRoute } from './router/router';
 import { paths } from './router/routes';

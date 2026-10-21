@@ -54,20 +54,30 @@
   gap: 1rem;
 }
 
+/* Botones de ícono: gris en reposo, blanco al pasar el mouse. */
 .iconButton {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: 0.25rem;
   border: none;
   background: none;
-  color: var(--text);
-  font-size: 1.1rem;
+  color: var(--text-muted);
 }
 
 .playButton {
+  display: inline-grid;
+  place-items: center;
   width: 36px;
   height: 36px;
   border: none;
   border-radius: 50%;
   background: var(--text);
   color: #000;
+}
+
+.playButton:not(:disabled):hover {
+  transform: scale(1.06);
 }
 
 .transfer {
@@ -98,8 +108,26 @@
   accent-color: var(--accent);
 }
 
-.iconButton.on {
+.iconButton:not(:disabled):hover {
+  color: var(--text);
+}
+
+/* Botones con estado (aleatorio, repetir, cola): color de acento + punto cuando están activos. */
+.toggle.on,
+.toggle.on:not(:disabled):hover {
   color: var(--accent);
+}
+
+.toggle.on::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translateX(-50%);
 }
 
 .right {

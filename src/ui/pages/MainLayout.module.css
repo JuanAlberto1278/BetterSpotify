@@ -19,8 +19,16 @@
   grid-area: sidebar;
 }
 
-.layout > aside:not(:first-child) {
+.queueSlot {
   grid-area: queue;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #000;
+}
+
+.queueSlot > * {
+  flex: 1;
 }
 
 .layout > footer {
@@ -68,7 +76,7 @@
     display: none;
   }
 
-  .withQueue > aside:not(:first-child) {
+  .withQueue > .queueSlot {
     grid-area: content;
   }
 

@@ -1,19 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDevices } from '../../data/usePlayback';
 import { usePlayer } from '../../player/usePlayer';
+import { DevicesIcon, DeviceTypeIcon, RefreshIcon } from '../icons';
 import styles from './DevicePicker.module.css';
-
-const DEVICE_ICONS: Record<string, string> = {
-  computer: '💻',
-  smartphone: '📱',
-  tablet: '📱',
-  speaker: '🔈',
-  tv: '📺',
-  castvideo: '📺',
-  castaudio: '🔈',
-  automobile: '🚗',
-  gameconsole: '🎮',
-};
 
 export default function DevicePicker() {
   const [open, setOpen] = useState(false);
@@ -41,21 +30,21 @@ export default function DevicePicker() {
   return (
     <div className={styles.root} ref={rootRef}>
       <button
-        className={styles.trigger}
+        className={`${styles.trigger} ${open ? styles.open : ''}`}
         onClick={() => setOpen((o) => !o)}
         aria-label="Dispositivos"
         aria-expanded={open}
         title="Dispositivos"
       >
-        🖥
+        <DevicesIcon size={18} />
       </button>
 
       {open && (
         <div className={styles.popover} role="menu">
           <div className={styles.header}>
             <span>Dispositivos</span>
-            <button className={styles.refresh} onClick={devices.reload} aria-label="Actualizar">
-              ↻
+            <button className={styles.refresh} onClick={devices.reload} aria-label="Actualizar" title="Actualizar">
+              <RefreshIcon size={16} />
             </button>
           </div>
 
@@ -77,7 +66,7 @@ export default function DevicePicker() {
                   }}
                   role="menuitem"
                 >
-                  <span className={styles.icon}>{DEVICE_ICONS[device.type.toLowerCase()] ?? '🎵'}</span>
+                  <DeviceTypeIcon type={device.type} size={20} className={styles.icon} />
                   <span className={styles.name}>
                     {device.name}
                     {device.id === deviceId && <small> (este navegador)</small>}

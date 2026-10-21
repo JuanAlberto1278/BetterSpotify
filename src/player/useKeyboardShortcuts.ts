@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { usePlayer } from './usePlayer';
-import type { PlayerContextValue } from './PlayerProvider';
+import type { PlayerContextValue } from './playerContext';
 
 const SEEK_STEP_MS = 5000;
 const VOLUME_STEP = 0.05;

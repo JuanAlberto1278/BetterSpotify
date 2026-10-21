@@ -1,18 +1,18 @@
-import type { Episode, Track } from '../../api/types';
-import { useQueue } from '../../data/usePlayback';
+import { useQueue, type QueueEntry } from '../../data/usePlayback';
+import { CloseIcon } from '../icons';
 import { pickImage } from '../images';
 import styles from './QueuePanel.module.css';
 
 export default function QueuePanel({ onClose }: { onClose: () => void }) {
   const queue = useQueue(true);
-  const { currently_playing: current, queue: upcoming = [] } = queue.data ?? {};
+  const sections = queue.data;
 
   return (
     <aside className={styles.panel} aria-label="Cola de reproducción">
       <header className={styles.header}>
         <h2 className={styles.title}>Cola</h2>
         <button className={styles.close} onClick={onClose} aria-label="Cerrar cola">
-          ✕
+          <CloseIcon size={18} />
         </button>
       </header>
 
@@ -21,28 +21,31 @@ export default function QueuePanel({ onClose }: { onClose: () => void }) {
           {queue.error} <button onClick={queue.reload}>Reintentar</button>
         </p>
       )}
-      {queue.loading && !queue.data && <p className={styles.status}>Cargando…</p>}
+      {queue.loading && !sections && <p className={styles.status}>Cargando…</p>}
 
-      {current && (
+      {sections?.current && (
         <>
           <h3 className={styles.section}>Sonando ahora</h3>
-          <QueueItem item={current} highlight />
+          <QueueItem item={sections.current} variant="current" />
         </>
       )}
 
-      {queue.data && (
+      {sections && sections.userQueued.length > 0 && (
         <>
-          <h3 className={styles.section}>A continuación</h3>
-          {upcoming.length === 0 ? (
-            <p className={styles.status}>No hay nada en cola.</p>
+          <h3 className={styles.section}>Agregadas por vos</h3>
+          <QueueList items={sections.userQueued} variant="user" />
+        </>
+      )}
+
+      {sections && (
+        <>
+          <h3 className={styles.section}>
+            {sections.contextName ? `Siguiente de: ${sections.contextName}` : 'A continuación'}
+          </h3>
+          {sections.upcoming.length === 0 ? (
+            <p className={styles.status}>No hay nada más en cola.</p>
           ) : (
-            <ol className={styles.list}>
-              {upcoming.map((item, index) => (
-                <li key={`${item.uri}-${index}`}>
-                  <QueueItem item={item} />
-                </li>
-              ))}
-            </ol>
+            <QueueList items={sections.upcoming} />
           )}
         </>
       )}
@@ -50,16 +53,30 @@ export default function QueuePanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-function QueueItem({ item, highlight = false }: { item: Track | Episode; highlight?: boolean }) {
+type Variant = 'current' | 'user' | 'context';
+
+function QueueList({ items, variant = 'context' }: { items: QueueEntry[]; variant?: Variant }) {
+  return (
+    <ol className={styles.list}>
+      {items.map((item, index) => (
+        <li key={`${item.uri}-${index}`}>
+          <QueueItem item={item} variant={variant} />
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function QueueItem({ item, variant }: { item: QueueEntry; variant: Variant }) {
   const image = pickImage(item.type === 'track' ? item.album.images : item.images, 40);
   const subtitle =
     item.type === 'track' ? item.artists.map((a) => a.name).join(', ') : (item.show?.name ?? 'Episodio');
 
   return (
-    <div className={styles.item}>
+    <div className={`${styles.item} ${styles[variant] ?? ''}`}>
       {image ? <img className={styles.cover} src={image} alt="" loading="lazy" /> : <div className={styles.cover} />}
       <div className={styles.text}>
-        <div className={`${styles.name} ${highlight ? styles.highlight : ''}`}>{item.name}</div>
+        <div className={styles.name}>{item.name}</div>
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
     </div>

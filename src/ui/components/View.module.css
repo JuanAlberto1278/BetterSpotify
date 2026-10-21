@@ -20,7 +20,6 @@
   place-items: center;
   background: linear-gradient(135deg, #450af5, #c4efd9);
   color: #fff;
-  font-size: 4rem;
 }
 
 .error {
@@ -47,6 +46,9 @@
 }
 
 .playAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.6rem 1.5rem;
   border: none;
   border-radius: 999px;

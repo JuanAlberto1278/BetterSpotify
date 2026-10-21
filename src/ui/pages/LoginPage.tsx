@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/useAuth';
 import { CLIENT_ID } from '../../config';
 import styles from './LoginPage.module.css';
 

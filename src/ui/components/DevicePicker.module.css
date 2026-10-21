@@ -3,10 +3,20 @@
 }
 
 .trigger {
+  display: inline-grid;
+  place-items: center;
+  padding: 0.25rem;
   border: none;
   background: none;
+  color: var(--text-muted);
+}
+
+.trigger:hover {
   color: var(--text);
-  font-size: 1.1rem;
+}
+
+.trigger.open {
+  color: var(--accent);
 }
 
 .popover {
@@ -30,9 +40,15 @@
 }
 
 .refresh {
+  display: inline-grid;
+  place-items: center;
   border: none;
   background: none;
   color: var(--text-muted);
+}
+
+.refresh:hover {
+  color: var(--text);
 }
 
 .list {
@@ -67,8 +83,12 @@
 }
 
 .icon {
-  width: 1.5rem;
-  text-align: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.active .icon {
+  color: var(--accent);
 }
 
 .name {

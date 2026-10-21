@@ -1,4 +1,15 @@
 import { usePlayer } from '../../player/usePlayer';
+import {
+  CloseIcon,
+  NextIcon,
+  PauseIcon,
+  PlayIcon,
+  PreviousIcon,
+  QueueIcon,
+  RepeatIcon,
+  RepeatOneIcon,
+  ShuffleIcon,
+} from '../icons';
 import DevicePicker from './DevicePicker';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
@@ -19,6 +30,8 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
     togglePlay, next, previous, toggleShuffle, cycleRepeat, transferHere, dismissToast,
   } = usePlayer();
 
+  const toggleClass = (on: boolean) => `${styles.iconButton} ${styles.toggle} ${on ? styles.on : ''}`;
+
   return (
     <footer className={styles.bar}>
       {toast && (
@@ -29,7 +42,7 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
         >
           <span>{toast.text}</span>
           <button className={styles.iconButton} onClick={dismissToast} aria-label="Cerrar">
-            ✕
+            <CloseIcon size={16} />
           </button>
         </div>
       )}
@@ -54,14 +67,14 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
         ) : (
           <div className={styles.controls}>
             <button
-              className={`${styles.iconButton} ${shuffle ? styles.on : ''}`}
+              className={toggleClass(shuffle)}
               onClick={toggleShuffle}
               disabled={!canShuffle}
               aria-label="Aleatorio"
               aria-pressed={shuffle}
-              title="Aleatorio (S)"
+              title={`Aleatorio: ${shuffle ? 'sí' : 'no'} (S)`}
             >
-              🔀
+              <ShuffleIcon size={18} />
             </button>
             <button
               className={styles.iconButton}
@@ -70,7 +83,7 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
               aria-label="Anterior"
               title="Anterior (Shift + ←)"
             >
-              ⏮
+              <PreviousIcon />
             </button>
             <button
               className={styles.playButton}
@@ -79,7 +92,7 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
               aria-label={paused ? 'Reproducir' : 'Pausar'}
               title="Reproducir / pausar (Espacio)"
             >
-              {paused ? '▶' : '⏸'}
+              {paused ? <PlayIcon size={18} /> : <PauseIcon size={18} />}
             </button>
             <button
               className={styles.iconButton}
@@ -88,16 +101,16 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
               aria-label="Siguiente"
               title="Siguiente (Shift + →)"
             >
-              ⏭
+              <NextIcon />
             </button>
             <button
-              className={`${styles.iconButton} ${repeatMode !== 'off' ? styles.on : ''}`}
+              className={toggleClass(repeatMode !== 'off')}
               onClick={cycleRepeat}
               disabled={!canRepeat}
               aria-label={REPEAT_LABEL[repeatMode]}
               title={`${REPEAT_LABEL[repeatMode]} (R)`}
             >
-              {repeatMode === 'track' ? '🔂' : '🔁'}
+              {repeatMode === 'track' ? <RepeatOneIcon size={18} /> : <RepeatIcon size={18} />}
             </button>
           </div>
         )}
@@ -106,13 +119,13 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
 
       <div className={styles.right}>
         <button
-          className={`${styles.iconButton} ${queueOpen ? styles.on : ''}`}
+          className={toggleClass(queueOpen)}
           onClick={onToggleQueue}
           aria-label="Cola de reproducción"
           aria-pressed={queueOpen}
           title="Cola (Q)"
         >
-          ☰
+          <QueueIcon size={18} />
         </button>
         <DevicePicker />
         <VolumeControl />

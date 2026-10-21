@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '../api/errors';
 
 export type AsyncFetcher<T> = (signal: AbortSignal) => Promise<T>;
@@ -10,40 +10,56 @@ export interface AsyncResult<T> {
   reload: () => void;
 }
 
+interface Request<T> {
+  fetcher: AsyncFetcher<T>;
+}
+
+interface Settled<T> {
+  /** Pedido al que corresponde este resultado. */
+  request: Request<T> | null;
+  data: T | null;
+  error: string | null;
+}
+
 /**
  * Ejecuta `fetcher` cada vez que cambia (memorizalo con useMemo/useCallback).
  * Mientras recarga conserva el dato anterior para evitar parpadeos.
  * Pasar null no pide nada.
+ *
+ * `loading` no se guarda en estado: se deriva de si el último resultado
+ * corresponde al pedido actual.
  */
 export function useAsync<T>(fetcher: AsyncFetcher<T> | null): AsyncResult<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const request = useMemo<Request<T> | null>(
+    () => (fetcher ? { fetcher, reloadKey } : null),
+    [fetcher, reloadKey],
+  );
+  const [settled, setSettled] = useState<Settled<T>>({ request: null, data: null, error: null });
 
   useEffect(() => {
-    if (!fetcher) {
-      setLoading(false);
-      return;
-    }
+    if (!request) return;
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    fetcher(controller.signal)
-      .then((result) => {
-        if (controller.signal.aborted) return;
-        setData(result);
-        setLoading(false);
+    request
+      .fetcher(controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setSettled({ request, data, error: null });
       })
       .catch((err) => {
-        if (controller.signal.aborted) return;
-        setError(describeError(err));
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setSettled((prev) => ({ request, data: prev.data, error: describeError(err) }));
+        }
       });
     return () => controller.abort();
-  }, [fetcher, reloadKey]);
+  }, [request]);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
+  const isCurrent = request !== null && settled.request === request;
 
-  return { data, loading, error, reload };
+  return {
+    data: settled.data,
+    loading: request !== null && !isCurrent,
+    error: isCurrent ? settled.error : null,
+    reload,
+  };
 }

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getValidAccessToken } from '../auth/auth';
 import { describeError, SpotifyApiError } from '../api/errors';
 import {
@@ -10,95 +10,21 @@ import {
   type RepeatMode,
 } from '../api/player';
 import { loadSpotifySdk } from './loadSdk';
+import {
+  PlayerContext,
+  type PlayContextOptions,
+  type PlayerContextValue,
+  type PlayerStatus,
+  type PlayerTrack,
+  type PositionSnapshot,
+  type Toast,
+} from './playerContext';
 
 const PLAYER_NAME = 'BetterSpotify';
 const VOLUME_STORAGE_KEY = 'betterspotify.volume';
 const REPEAT_MODES: RepeatMode[] = ['off', 'context', 'track'];
 /** Máximo de URIs que se mandan en una reproducción de lista suelta. */
 const MAX_URIS = 100;
-
-// ── Tipos públicos (lo que consume la UI) ───────────────────────────────────
-
-export type { RepeatMode };
-export type PlayerStatus = 'connecting' | 'ready' | 'error';
-
-export interface PlayerTrack {
-  uri: string;
-  name: string;
-  artists: { name: string; uri: string }[];
-  album: { name: string; uri: string; imageUrl: string | null };
-  durationMs: number;
-}
-
-/** Foto de la posición en un instante; usePlaybackPosition() la interpola. */
-export interface PositionSnapshot {
-  positionMs: number;
-  durationMs: number;
-  paused: boolean;
-  /** Date.now() del momento en que se tomó la foto. */
-  takenAt: number;
-}
-
-export interface Toast {
-  id: number;
-  kind: 'error' | 'info';
-  text: string;
-}
-
-export interface PlayContextOptions {
-  /** Canción por la que empezar. */
-  trackUri?: string;
-  /**
-   * Si Spotify rechaza el contexto, se reproducen estas URIs como lista suelta
-   * (útil para "Tus me gusta").
-   */
-  fallbackUris?: string[];
-}
-
-export interface PlayerContextValue {
-  status: PlayerStatus;
-  deviceId: string | null;
-  /** true si este navegador es el dispositivo activo de Spotify. */
-  isActive: boolean;
-  paused: boolean;
-  track: PlayerTrack | null;
-  contextUri: string | null;
-  snapshot: PositionSnapshot;
-  volume: number;
-  shuffle: boolean;
-  repeatMode: RepeatMode;
-  canSkipPrev: boolean;
-  canSkipNext: boolean;
-  canSeek: boolean;
-  canShuffle: boolean;
-  canRepeat: boolean;
-  /** Aumenta cada vez que se agrega algo a la cola (para refrescar la vista de cola). */
-  queueVersion: number;
-  toast: Toast | null;
-
-  togglePlay: () => void;
-  next: () => void;
-  previous: () => void;
-  seek: (positionMs: number) => void;
-  /** Posición actual interpolada, sin provocar renders (para atajos de teclado). */
-  getPositionMs: () => number;
-  setVolume: (volume: number) => void;
-  toggleMute: () => void;
-  toggleShuffle: () => void;
-  /** off → context → track → off */
-  cycleRepeat: () => void;
-  /** Trae la reproducción a este navegador y la reanuda. */
-  transferHere: () => void;
-  /** Pasa la reproducción a otro dispositivo de Spotify Connect. */
-  transferTo: (deviceId: string) => void;
-  playContext: (contextUri: string, options?: PlayContextOptions) => void;
-  /** Reproduce una lista suelta de canciones empezando por `startIndex`. */
-  playTracks: (uris: string[], startIndex?: number) => void;
-  addToQueue: (uri: string) => void;
-  dismissToast: () => void;
-}
-
-export const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 // ── Provider ────────────────────────────────────────────────────────────────
 
@@ -117,7 +43,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [snapshot, setSnapshotState] = useState<PositionSnapshot>(EMPTY_SNAPSHOT);
   const [volume, setVolumeState] = useState(loadVolume);
   const [queueVersion, setQueueVersion] = useState(0);
+  const [queuedByUser, setQueuedByUser] = useState<string[]>([]);
   const [toast, setToast] = useState<Toast | null>(null);
+  const lastTrackUriRef = useRef<string | null>(null);
 
   const setSnapshot = useCallback((update: (prev: PositionSnapshot) => PositionSnapshot) => {
     snapshotRef.current = update(snapshotRef.current);
@@ -180,6 +108,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         player.addListener('player_state_changed', (s) => {
           if (cancelled) return;
           setState(s);
+
+          // Cuando empieza a sonar una canción agregada a mano, deja de estar "en cola".
+          const uri = s?.track_window.current_track?.uri ?? null;
+          if (uri && uri !== lastTrackUriRef.current) {
+            setQueuedByUser((list) => removeFirst(list, uri));
+          }
+          lastTrackUriRef.current = uri;
+
           setSnapshot(() =>
             s
               ? { positionMs: s.position, durationMs: s.duration, paused: s.paused, takenAt: Date.now() }
@@ -332,6 +268,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     (uri: string) => {
       run(async () => {
         await apiAddToQueue(uri);
+        setQueuedByUser((list) => [...list, uri]);
         setQueueVersion((v) => v + 1);
       }, 'Agregada a la cola');
     },
@@ -350,6 +287,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       paused: state?.paused ?? true,
       track: current ? toPlayerTrack(current) : null,
       contextUri: state?.context.uri ?? null,
+      contextName: readContextName(state),
       snapshot,
       volume,
       shuffle,
@@ -360,6 +298,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       canShuffle: isActive && !disallows.toggling_shuffle,
       canRepeat: isActive && !(disallows.toggling_repeat_context && disallows.toggling_repeat_track),
       queueVersion,
+      queuedByUser,
       toast,
       togglePlay,
       next,
@@ -378,7 +317,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       dismissToast,
     };
   }, [
-    status, deviceId, isActive, state, snapshot, volume, shuffle, repeatMode, queueVersion, toast,
+    status, deviceId, isActive, state, snapshot, volume, shuffle, repeatMode, queueVersion,
+    queuedByUser, toast,
     togglePlay, next, previous, seek, getPositionMs, setVolume, toggleMute, toggleShuffle,
     cycleRepeat, transferHere, transferTo, playContext, playTracks, addToQueue, dismissToast,
   ]);
@@ -387,6 +327,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
+
+function removeFirst(list: string[], value: string): string[] {
+  const index = list.indexOf(value);
+  return index === -1 ? list : [...list.slice(0, index), ...list.slice(index + 1)];
+}
+
+function readContextName(state: Spotify.PlaybackState | null): string | null {
+  const name = state?.context.metadata?.name;
+  return typeof name === 'string' && name ? name : null;
+}
 
 /** Reproduce URIs sueltas, recortando a una ventana de MAX_URIS alrededor del inicio. */
 function startUris(deviceId: string, uris: string[], startIndex: number): Promise<null> {

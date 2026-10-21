@@ -28,8 +28,15 @@
 }
 
 .icon {
+  display: inline-grid;
+  place-items: center;
   width: 40px;
-  text-align: center;
+  color: var(--text-muted);
+}
+
+.active .icon,
+.item:hover .icon {
+  color: var(--text);
 }
 
 .likedCover {

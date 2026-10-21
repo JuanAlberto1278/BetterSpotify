@@ -1,6 +1,7 @@
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth } from '../../auth/useAuth';
 import { usePlaylist, usePlaylistTracks } from '../../data/useLibrary';
 import { usePlayer } from '../../player/usePlayer';
+import { PlayIcon } from '../icons';
 import { pickImage } from '../images';
 import TrackList from './TrackList';
 import styles from './View.module.css';
@@ -29,7 +30,7 @@ export default function PlaylistView({ playlistId }: { playlistId: string }) {
             {tracks.total !== null && ` · ${tracks.total} canciones`}
           </p>
           <button className={styles.playAll} onClick={() => playContext(uri)}>
-            ▶ Reproducir
+            <PlayIcon size={16} /> Reproducir
           </button>
         </div>
       </header>

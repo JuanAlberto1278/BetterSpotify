@@ -17,9 +17,15 @@
 }
 
 .close {
+  display: inline-flex;
+  padding: 0.25rem;
   border: none;
   background: none;
   color: var(--text-muted);
+}
+
+.close:hover {
+  color: var(--text);
 }
 
 .section {
@@ -63,8 +69,15 @@
   text-overflow: ellipsis;
 }
 
-.highlight {
+.current .name {
   color: var(--accent);
+}
+
+/* Lo agregado a mano: marca a la izquierda, como un "pin". */
+.user {
+  margin-left: -0.5rem;
+  padding-left: calc(0.5rem - 3px);
+  border-left: 3px solid var(--accent);
 }
 
 .subtitle {
