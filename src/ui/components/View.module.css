@@ -144,6 +144,28 @@
   gap: 1rem;
 }
 
+.description {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid #555;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.secondaryAction:hover {
+  border-color: var(--text);
+}
+
 .metaLink {
   color: var(--text);
   font-weight: 600;

@@ -57,22 +57,20 @@
   display: inline-grid;
 }
 
-.queueButton {
+.menuCell {
   display: inline-grid;
   place-items: center;
-  border: none;
-  background: none;
-  color: var(--text-muted);
+}
+
+/* El botón ⋯ aparece al pasar el mouse (o con foco / menú abierto). */
+.menuButton {
   visibility: hidden;
 }
 
-.row:hover .queueButton,
-.queueButton:focus-visible {
+.row:hover .menuButton,
+.menuButton:focus-visible,
+.menuButton[aria-expanded='true'] {
   visibility: visible;
-}
-
-.queueButton:hover {
-  color: var(--text);
 }
 
 /* El ♥ se ve siempre si está guardada; si no, solo al pasar el mouse. */

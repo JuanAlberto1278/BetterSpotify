@@ -6,6 +6,11 @@ export const ALBUM_TYPE_LABEL: Record<AlbumType, string> = {
   compilation: 'Recopilación',
 };
 
+/** Spotify devuelve las descripciones con entidades HTML ("&#x27;", "&amp;"...). */
+export function decodeHtml(text: string): string {
+  return new DOMParser().parseFromString(text, 'text/html').body.textContent ?? text;
+}
+
 /** 215000 → "3:35" */
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

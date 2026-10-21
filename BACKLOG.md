@@ -2,12 +2,14 @@
 
 ## Pendiente
 
+- Dejar de seguir / eliminar playlists (`DELETE /me/library` con la URI de la playlist).
 - **Vista "Sonando ahora"** con portada grande.
-- **Gestionar playlists** (crear, agregar canciones). Requiere scopes de modificación → re-login.
 - **Rediseño de la UI** sobre `src/ui/` (la lógica está en `auth/`, `api/`, `data/`, `player/`, `router/`).
 
 ## Hecho
 
+- Gestionar playlists: crear, editar (nombre/descripción/pública), agregar canciones (menú ⋯), quitar canciones.
+- "Escuchado recientemente" en el Inicio.
 - Búsqueda completa: pestañas Todo / Canciones / Artistas / Álbumes / Playlists (`/search?q=&tab=`).
 - Barra superior con menús (Biblioteca, Perfil), buscador integrado, atrás/adelante; Inicio con playlists; "Tus playlists"; Configuración (transferir al abrir).
 - "Tus álbumes" (`/collection/albums`).

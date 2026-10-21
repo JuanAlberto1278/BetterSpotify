@@ -15,12 +15,14 @@ import {
   LogoIcon,
   LogoutIcon,
   PlaylistIcon,
+  PlusIcon,
   SearchIcon,
   SettingsIcon,
 } from '../icons';
 import { pickImage } from '../images';
 import Link from './Link';
 import Menu, { MenuHeading, MenuItem, MenuSeparator } from './Menu';
+import NewPlaylistDialog from './NewPlaylistDialog';
 import ShortcutsDialog from './ShortcutsDialog';
 import styles from './TopBar.module.css';
 
@@ -32,6 +34,7 @@ const QUICK_PLAYLISTS = 12;
 export default function TopBar({ route }: { route: Route }) {
   const { user, logout } = useAuth();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
   const query = route.name === 'search' ? route.query : '';
   const avatar = pickImage(user?.images, 32);
   const libraryActive = route.name === 'liked' || route.name === 'savedAlbums' || route.name === 'playlists';
@@ -75,7 +78,16 @@ export default function TopBar({ route }: { route: Route }) {
             </>
           }
         >
-          {(close) => <LibraryMenu route={route} close={close} />}
+          {(close) => (
+            <LibraryMenu
+              route={route}
+              close={close}
+              onCreatePlaylist={() => {
+                close();
+                setCreatingPlaylist(true);
+              }}
+            />
+          )}
         </Menu>
       </div>
 
@@ -147,12 +159,21 @@ export default function TopBar({ route }: { route: Route }) {
       </div>
 
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <NewPlaylistDialog open={creatingPlaylist} onClose={() => setCreatingPlaylist(false)} />
     </header>
   );
 }
 
 /** Contenido del menú Biblioteca. Se monta solo al abrirlo (ahí pide las playlists). */
-function LibraryMenu({ route, close }: { route: Route; close: () => void }) {
+function LibraryMenu({
+  route,
+  close,
+  onCreatePlaylist,
+}: {
+  route: Route;
+  close: () => void;
+  onCreatePlaylist: () => void;
+}) {
   const playlists = usePlaylists();
   const quick = playlists.items.slice(0, QUICK_PLAYLISTS);
 
@@ -176,6 +197,10 @@ function LibraryMenu({ route, close }: { route: Route; close: () => void }) {
         active={route.name === 'playlists'}
       >
         Tus playlists
+      </MenuItem>
+
+      <MenuItem icon={<PlusIcon size={18} />} onSelect={onCreatePlaylist}>
+        Crear playlist
       </MenuItem>
 
       <MenuSeparator />

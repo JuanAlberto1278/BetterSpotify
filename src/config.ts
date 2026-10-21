@@ -16,6 +16,11 @@ export const SCOPES = [
   'user-library-read',
   // Guardar / quitar de "Tus me gusta" (PUT/DELETE /me/library).
   'user-library-modify',
+  // Crear playlists, agregar/quitar canciones y editar sus datos.
+  'playlist-modify-public',
+  'playlist-modify-private',
+  // "Escuchado recientemente" en el Inicio.
+  'user-read-recently-played',
 ];
 
 export const ACCOUNTS_URL = 'https://accounts.spotify.com';

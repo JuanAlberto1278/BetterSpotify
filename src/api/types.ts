@@ -130,6 +130,13 @@ export interface PlaylistItem {
   item: Track | Episode | null;
 }
 
+/** Elemento de /me/player/recently-played. */
+export interface PlayHistoryItem {
+  track: Track;
+  played_at: string;
+  context: { type: string; uri: string } | null;
+}
+
 export interface SimplifiedPlaylist {
   id: string;
   name: string;
@@ -138,4 +145,7 @@ export interface SimplifiedPlaylist {
   images: SpotifyImage[] | null;
   owner: { id: string; display_name: string | null };
   collaborative: boolean;
+  /** null si Spotify no lo informa. */
+  public?: boolean | null;
+  snapshot_id?: string;
 }

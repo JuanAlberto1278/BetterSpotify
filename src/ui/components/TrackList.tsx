@@ -3,12 +3,13 @@ import type { PagedList } from '../../data/usePagedList';
 import { usePlayer } from '../../player/usePlayer';
 import { paths } from '../../router/routes';
 import { formatDuration } from '../format';
-import { EqualizerIcon, PlayIcon, PlusIcon } from '../icons';
+import { EqualizerIcon, PlayIcon } from '../icons';
 import { pickImage } from '../images';
 import ArtistLinks from './ArtistLinks';
 import Link from './Link';
 import LoadMoreSentinel from './LoadMoreSentinel';
 import SaveButton from './SaveButton';
+import TrackMenu from './TrackMenu';
 import styles from './TrackList.module.css';
 
 interface Props {
@@ -18,10 +19,21 @@ interface Props {
   emptyText?: string;
   /** "album": sin portada ni columna de álbum (dentro de la vista de un álbum). */
   variant?: 'default' | 'album';
+  /** Si está, cada fila ofrece "Quitar de esta playlist". */
+  onRemove?: (track: Track) => void;
+  /** Playlist que se está viendo (no se ofrece agregar a sí misma). */
+  playlistId?: string;
 }
 
-export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.', variant = 'default' }: Props) {
-  const { track: current, paused, addToQueue } = usePlayer();
+export default function TrackList({
+  list,
+  onPlay,
+  emptyText = 'No hay canciones.',
+  variant = 'default',
+  onRemove,
+  playlistId,
+}: Props) {
+  const { track: current, paused } = usePlayer();
   const { items, loading, error, hasMore, loadMore } = list;
   const showAlbum = variant === 'default';
 
@@ -82,15 +94,15 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                   </div>
                 )}
                 <SaveButton uri={track.uri} className={styles.heart} />
-                <button
-                  className={styles.queueButton}
-                  onClick={() => addToQueue(track.uri)}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  aria-label={`Agregar ${track.name} a la cola`}
-                  title="Agregar a la cola"
-                >
-                  <PlusIcon size={16} />
-                </button>
+                {/* El menú no debe disparar el doble clic de la fila (reproducir). */}
+                <span className={styles.menuCell} onDoubleClick={(e) => e.stopPropagation()}>
+                  <TrackMenu
+                    track={track}
+                    className={styles.menuButton}
+                    currentPlaylistId={playlistId}
+                    onRemove={onRemove ? () => onRemove(track) : undefined}
+                  />
+                </span>
                 <div className={styles.duration}>{formatDuration(track.duration_ms)}</div>
               </li>
             );

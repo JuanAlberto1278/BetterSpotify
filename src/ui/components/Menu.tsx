@@ -29,8 +29,21 @@ export default function Menu({ trigger, label, align = 'left', triggerClassName 
 
   useEffect(() => {
     if (!open) return;
+    const menu = menuRef.current;
+    // Se abre hacia el lado con más espacio y se limita la altura a ese espacio
+    // (el menú tiene scroll propio), para que nunca quede cortado.
+    const trigger = triggerRef.current?.getBoundingClientRect();
+    if (menu && trigger) {
+      const margin = 16;
+      const spaceBelow = window.innerHeight - trigger.bottom - margin;
+      const spaceAbove = trigger.top - margin;
+      const height = menu.scrollHeight;
+      const openUp = height > spaceBelow && spaceAbove > spaceBelow;
+      menu.classList.toggle(styles.up, openUp);
+      menu.style.maxHeight = `${Math.max(120, openUp ? spaceAbove : spaceBelow)}px`;
+    }
     // Al abrir, el foco va al primer ítem (navegación por teclado).
-    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    menu?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
 
     const onPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
