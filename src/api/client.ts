@@ -66,9 +66,25 @@ export async function spotifyFetch<T>(path: string, options: RequestOptions = {}
 
     if (!res.ok) throw await toApiError(res);
 
-    if (res.status === 204) return null as T;
-    const text = await res.text();
-    return (text ? JSON.parse(text) : null) as T;
+    return (await parseBody(res)) as T;
+  }
+}
+
+/**
+ * Algunos endpoints del player (shuffle, repeat, queue...) responden 200 con
+ * texto plano en lugar de JSON o 204. Solo se parsea lo que es JSON; el resto
+ * se trata como "sin contenido".
+ */
+async function parseBody(res: Response): Promise<unknown> {
+  if (res.status === 204) return null;
+  const text = await res.text();
+  if (!text) return null;
+  const isJson = res.headers.get('Content-Type')?.includes('json') ?? false;
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    if (isJson) throw err;
+    return null;
   }
 }
 
