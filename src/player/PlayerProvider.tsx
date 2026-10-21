@@ -314,13 +314,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       playContext,
       playTracks,
       addToQueue,
+      notify,
       dismissToast,
     };
   }, [
     status, deviceId, isActive, state, snapshot, volume, shuffle, repeatMode, queueVersion,
     queuedByUser, toast,
     togglePlay, next, previous, seek, getPositionMs, setVolume, toggleMute, toggleShuffle,
-    cycleRepeat, transferHere, transferTo, playContext, playTracks, addToQueue, dismissToast,
+    cycleRepeat, transferHere, transferTo, playContext, playTracks, addToQueue, notify, dismissToast,
   ]);
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

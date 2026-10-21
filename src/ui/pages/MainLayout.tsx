@@ -3,6 +3,8 @@ import { useAuth } from '../../auth/useAuth';
 import { useKeyboardShortcuts } from '../../player/useKeyboardShortcuts';
 import { navigate } from '../../router/router';
 import { paths, type Route } from '../../router/routes';
+import AlbumView from '../components/AlbumView';
+import ArtistView from '../components/ArtistView';
 import ErrorBoundary from '../components/ErrorBoundary';
 import LikedView from '../components/LikedView';
 import PlayerBar from '../components/PlayerBar';
@@ -37,6 +39,8 @@ export default function MainLayout({ route }: { route: Route }) {
           {route.name === 'search' && <SearchView query={route.query} />}
           {route.name === 'liked' && <LikedView />}
           {route.name === 'playlist' && <PlaylistView key={route.id} playlistId={route.id} />}
+          {route.name === 'album' && <AlbumView key={route.id} albumId={route.id} />}
+          {route.name === 'artist' && <ArtistView key={route.id} artistId={route.id} />}
           {(route.name === 'home' || route.name === 'notFound' || route.name === 'callback') && (
             <>
               <h1>Hola{user?.display_name ? `, ${user.display_name}` : ''}</h1>

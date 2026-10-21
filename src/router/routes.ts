@@ -4,6 +4,8 @@ export type Route =
   | { name: 'search'; query: string }
   | { name: 'playlist'; id: string }
   | { name: 'liked' }
+  | { name: 'album'; id: string }
+  | { name: 'artist'; id: string }
   | { name: 'notFound' };
 
 /** Convierte "pathname?search" en una ruta. */
@@ -22,6 +24,10 @@ export function parseRoute(location: string): Route {
       return parts[1] ? { name: 'playlist', id: parts[1] } : { name: 'notFound' };
     case 'collection':
       return parts[1] === 'tracks' ? { name: 'liked' } : { name: 'notFound' };
+    case 'album':
+      return parts[1] ? { name: 'album', id: parts[1] } : { name: 'notFound' };
+    case 'artist':
+      return parts[1] ? { name: 'artist', id: parts[1] } : { name: 'notFound' };
     default:
       return { name: 'notFound' };
   }
@@ -33,4 +39,6 @@ export const paths = {
   search: (query = '') => (query ? `/search?q=${encodeURIComponent(query)}` : '/search'),
   playlist: (id: string) => `/playlist/${encodeURIComponent(id)}`,
   liked: () => '/collection/tracks',
+  album: (id: string) => `/album/${encodeURIComponent(id)}`,
+  artist: (id: string) => `/artist/${encodeURIComponent(id)}`,
 };

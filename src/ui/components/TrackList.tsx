@@ -1,10 +1,14 @@
 import type { Track } from '../../api/types';
 import type { PagedList } from '../../data/usePagedList';
 import { usePlayer } from '../../player/usePlayer';
+import { paths } from '../../router/routes';
 import { formatDuration } from '../format';
 import { EqualizerIcon, PlayIcon, PlusIcon } from '../icons';
 import { pickImage } from '../images';
+import ArtistLinks from './ArtistLinks';
+import Link from './Link';
 import LoadMoreSentinel from './LoadMoreSentinel';
+import SaveButton from './SaveButton';
 import styles from './TrackList.module.css';
 
 interface Props {
@@ -12,19 +16,22 @@ interface Props {
   /** Se llama con el índice de la canción elegida. */
   onPlay: (index: number) => void;
   emptyText?: string;
+  /** "album": sin portada ni columna de álbum (dentro de la vista de un álbum). */
+  variant?: 'default' | 'album';
 }
 
-export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.' }: Props) {
+export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.', variant = 'default' }: Props) {
   const { track: current, paused, addToQueue } = usePlayer();
   const { items, loading, error, hasMore, loadMore } = list;
+  const showAlbum = variant === 'default';
 
   return (
     <div>
       {items.length > 0 && (
-        <ol className={styles.list}>
+        <ol className={`${styles.list} ${showAlbum ? '' : styles.compact}`}>
           {items.map((track, index) => {
             const isCurrent = current?.uri === track.uri;
-            const cover = pickImage(track.album.images, 40);
+            const cover = showAlbum ? pickImage(track.album.images, 40) : null;
             return (
               <li
                 // Una playlist puede repetir canciones: el índice desambigua.
@@ -44,22 +51,41 @@ export default function TrackList({ list, onPlay, emptyText = 'No hay canciones.
                     <PlayIcon size={14} />
                   </span>
                 </button>
-                {cover ? (
-                  <img className={styles.cover} src={cover} alt="" loading="lazy" />
-                ) : (
-                  <div className={styles.cover} />
-                )}
+                {showAlbum &&
+                  (cover ? (
+                    <img className={styles.cover} src={cover} alt="" loading="lazy" />
+                  ) : (
+                    <div className={styles.cover} />
+                  ))}
                 <div className={styles.main}>
                   <div className={styles.name}>
                     {track.explicit && <span className={styles.explicit}>E</span>}
                     {track.name}
                   </div>
-                  <div className={styles.artists}>{track.artists.map((a) => a.name).join(', ')}</div>
+                  <div className={styles.artists}>
+                    <ArtistLinks artists={track.artists} className={styles.link} />
+                  </div>
                 </div>
-                <div className={styles.album}>{track.album.name}</div>
+                {showAlbum && (
+                  <div className={styles.album}>
+                    {track.album.id ? (
+                      <Link
+                        to={paths.album(track.album.id)}
+                        className={styles.link}
+                        onDoubleClick={(e) => e.stopPropagation()}
+                      >
+                        {track.album.name}
+                      </Link>
+                    ) : (
+                      track.album.name
+                    )}
+                  </div>
+                )}
+                <SaveButton uri={track.uri} className={styles.heart} />
                 <button
                   className={styles.queueButton}
                   onClick={() => addToQueue(track.uri)}
+                  onDoubleClick={(e) => e.stopPropagation()}
                   aria-label={`Agregar ${track.name} a la cola`}
                   title="Agregar a la cola"
                 >

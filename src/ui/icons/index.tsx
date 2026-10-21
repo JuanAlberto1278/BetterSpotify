@@ -134,7 +134,30 @@ export const HeartIcon = (p: IconProps) => (
   </Icon>
 );
 
-export const CloseIcon = (p: IconProps) => (
+/** Corazón vacío: "no está en Tus me gusta". */
+export const HeartOutlineIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 20.6s-7.6-4.6-9.4-9.3C1.3 8 3.5 4.4 7 4.4c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.5 0 5.7 3.6 4.4 6.9-1.8 4.7-9.4 9.3-9.4 9.3z" />
+  </Icon>
+);
+
+/** Disco: placeholder para portadas de álbum. */
+export const DiscIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="2.5" />
+  </Icon>
+);
+
+/** Persona: placeholder para fotos de artista. */
+export const ArtistIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+  </Icon>
+);
+
+export const CloseIcon =(p: IconProps) => (
   <Icon {...p}>
     <path d="M6 6l12 12" />
     <path d="M18 6L6 18" />

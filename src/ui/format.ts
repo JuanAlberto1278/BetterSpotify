@@ -1,3 +1,11 @@
+import type { AlbumType } from '../api/types';
+
+export const ALBUM_TYPE_LABEL: Record<AlbumType, string> = {
+  album: 'Álbum',
+  single: 'Sencillo',
+  compilation: 'Recopilación',
+};
+
 /** 215000 → "3:35" */
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

@@ -35,6 +35,44 @@ export interface SimplifiedAlbum {
   images: SpotifyImage[];
 }
 
+/** Canción dentro de un álbum: no trae el objeto `album`. */
+export interface SimplifiedTrack {
+  type: 'track';
+  id: string | null;
+  uri: string;
+  name: string;
+  duration_ms: number;
+  explicit: boolean;
+  is_local?: boolean;
+  track_number: number;
+  disc_number: number;
+  artists: SimplifiedArtist[];
+}
+
+export type AlbumType = 'album' | 'single' | 'compilation';
+
+/** Álbum en listados (discografía de un artista). */
+export interface AlbumSummary extends SimplifiedAlbum {
+  album_type: AlbumType;
+  release_date: string;
+  release_date_precision: 'year' | 'month' | 'day';
+  total_tracks: number;
+  artists: SimplifiedArtist[];
+}
+
+export interface Album extends AlbumSummary {
+  tracks: Paging<SimplifiedTrack>;
+}
+
+/** Artista. En modo desarrollo ya no trae followers ni popularity. */
+export interface Artist {
+  id: string;
+  name: string;
+  uri: string;
+  images: SpotifyImage[];
+  genres?: string[];
+}
+
 export interface Track {
   type: 'track';
   id: string | null;

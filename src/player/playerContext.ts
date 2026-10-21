@@ -86,6 +86,8 @@ export interface PlayerContextValue {
   /** Reproduce una lista suelta de canciones empezando por `startIndex`. */
   playTracks: (uris: string[], startIndex?: number) => void;
   addToQueue: (uri: string) => void;
+  /** Muestra un aviso en la barra del reproductor. */
+  notify: (kind: Toast['kind'], text: string) => void;
   dismissToast: () => void;
 }
 

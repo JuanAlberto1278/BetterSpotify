@@ -6,7 +6,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2.5rem 40px minmax(0, 3fr) minmax(0, 2fr) 2rem 3.5rem;
+  grid-template-columns: 2.5rem 40px minmax(0, 3fr) minmax(0, 2fr) 2rem 2rem 3.5rem;
   align-items: center;
   gap: 0.75rem;
   padding: 0.35rem 0.5rem;
@@ -16,6 +16,11 @@
 
 .row:hover {
   background: #2a2a2a;
+}
+
+/* Dentro de un álbum: sin portada ni columna de álbum. */
+.compact .row {
+  grid-template-columns: 2.5rem minmax(0, 1fr) 2rem 2rem 3.5rem;
 }
 
 .current .name {
@@ -68,6 +73,27 @@
 
 .queueButton:hover {
   color: var(--text);
+}
+
+/* El ♥ se ve siempre si está guardada; si no, solo al pasar el mouse. */
+.heart {
+  visibility: hidden;
+}
+
+.row:hover .heart,
+.heart:focus-visible,
+.heart[aria-pressed='true'] {
+  visibility: visible;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--text);
+  text-decoration: underline;
 }
 
 .cover {
@@ -123,7 +149,11 @@
 
 @media (max-width: 700px) {
   .row {
-    grid-template-columns: 2.5rem 40px minmax(0, 1fr) 2rem 3.5rem;
+    grid-template-columns: 2.5rem 40px minmax(0, 1fr) 2rem 2rem 3.5rem;
+  }
+
+  .compact .row {
+    grid-template-columns: 2.5rem minmax(0, 1fr) 2rem 2rem 3.5rem;
   }
 
   .album {

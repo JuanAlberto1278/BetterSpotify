@@ -1,4 +1,6 @@
+import { idFromUri } from '../../api/uri';
 import { usePlayer } from '../../player/usePlayer';
+import { paths } from '../../router/routes';
 import {
   CloseIcon,
   NextIcon,
@@ -10,7 +12,10 @@ import {
   RepeatOneIcon,
   ShuffleIcon,
 } from '../icons';
+import ArtistLinks from './ArtistLinks';
 import DevicePicker from './DevicePicker';
+import Link from './Link';
+import SaveButton from './SaveButton';
 import ProgressBar from './ProgressBar';
 import VolumeControl from './VolumeControl';
 import styles from './PlayerBar.module.css';
@@ -30,7 +35,8 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
     togglePlay, next, previous, toggleShuffle, cycleRepeat, transferHere, dismissToast,
   } = usePlayer();
 
-  const toggleClass = (on: boolean) => `${styles.iconButton} ${styles.toggle} ${on ? styles.on : ''}`;
+  const albumId = track ? idFromUri(track.album.uri) : null;
+  const toggleClass =(on: boolean) => `${styles.iconButton} ${styles.toggle} ${on ? styles.on : ''}`;
 
   return (
     <footer className={styles.bar}>
@@ -54,9 +60,20 @@ export default function PlayerBar({ queueOpen, onToggleQueue }: Props) {
           <div className={styles.cover} />
         )}
         <div className={styles.info}>
-          <div className={styles.title}>{track?.name ?? statusText(status, isActive)}</div>
-          <div className={styles.artist}>{track?.artists.map((a) => a.name).join(', ')}</div>
+          <div className={styles.title}>
+            {track && albumId ? (
+              <Link to={paths.album(albumId)} className={styles.link}>
+                {track.name}
+              </Link>
+            ) : (
+              (track?.name ?? statusText(status, isActive))
+            )}
+          </div>
+          <div className={styles.artist}>
+            {track && <ArtistLinks artists={track.artists} className={styles.link} />}
+          </div>
         </div>
+        {track && <SaveButton uri={track.uri} size={18} />}
       </div>
 
       <div className={styles.center}>

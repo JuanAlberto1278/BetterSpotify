@@ -1,5 +1,6 @@
 import { savedTracksContextUri } from '../../api/library';
 import { useAuth } from '../../auth/useAuth';
+import { useLibraryStatus } from '../../data/libraryStore';
 import { useSavedTracks } from '../../data/useLibrary';
 import { usePlayer } from '../../player/usePlayer';
 import { HeartIcon, PlayIcon } from '../icons';
@@ -8,8 +9,14 @@ import styles from './View.module.css';
 
 export default function LikedView() {
   const { user } = useAuth();
-  const tracks = useSavedTracks();
+  const allTracks = useSavedTracks();
   const { playContext, playTracks } = usePlayer();
+
+  // Lo que quitás con el ♥ desaparece al instante, sin recargar la lista.
+  const isSaved = useLibraryStatus(allTracks.items.map((t) => t.uri));
+  const tracks = { ...allTracks, items: allTracks.items.filter((t) => isSaved(t.uri) !== false) };
+  const removed = allTracks.items.length - tracks.items.length;
+  const total = allTracks.total !== null ? allTracks.total - removed : null;
 
   const play = (index?: number) => {
     const uris = tracks.items.map((t) => t.uri);
@@ -34,7 +41,7 @@ export default function LikedView() {
         <div>
           <p className={styles.kicker}>Playlist</p>
           <h1 className={styles.title}>Tus me gusta</h1>
-          <p className={styles.meta}>{tracks.total !== null && `${tracks.total} canciones`}</p>
+          <p className={styles.meta}>{total !== null && `${total} canciones`}</p>
           <button className={styles.playAll} onClick={() => play()} disabled={tracks.items.length === 0}>
             <PlayIcon size={16} /> Reproducir
           </button>
