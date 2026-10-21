@@ -14,6 +14,13 @@ export interface PagedList<T> {
   reload: () => void;
 }
 
+const noop = () => {};
+
+/** Envuelve un array ya cargado como PagedList (para reusar grillas y listas). */
+export function staticList<T>(items: T[]): PagedList<T> {
+  return { items, total: items.length, loading: false, error: null, hasMore: false, loadMore: noop, reload: noop };
+}
+
 interface Request<T> {
   fetchPage: PageFetcher<T>;
 }

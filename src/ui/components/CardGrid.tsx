@@ -12,6 +12,8 @@ export interface Card {
   imageUrl: string | null;
   /** Ícono a mostrar si no hay imagen. */
   placeholder: ReactNode;
+  /** Imagen redonda (artistas). */
+  round?: boolean;
 }
 
 interface Props<T> {
@@ -30,13 +32,14 @@ export default function CardGrid<T>({ list, toCard, emptyText = 'No hay nada par
         <ul className={styles.grid}>
           {items.map((item) => {
             const card = toCard(item);
+            const coverClass = `${styles.cover} ${card.round ? styles.round : ''}`;
             return (
               <li key={card.key}>
                 <Link to={card.to} className={styles.card} title={card.title}>
                   {card.imageUrl ? (
-                    <img className={styles.cover} src={card.imageUrl} alt="" loading="lazy" />
+                    <img className={coverClass} src={card.imageUrl} alt="" loading="lazy" />
                   ) : (
-                    <div className={`${styles.cover} ${styles.placeholder}`}>{card.placeholder}</div>
+                    <div className={`${coverClass} ${styles.placeholder}`}>{card.placeholder}</div>
                   )}
                   <span className={styles.name}>{card.title}</span>
                   {card.subtitle && <span className={styles.meta}>{card.subtitle}</span>}

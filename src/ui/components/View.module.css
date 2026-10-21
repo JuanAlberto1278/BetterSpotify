@@ -29,6 +29,33 @@
   font-size: 1.3rem;
 }
 
+.resultSection {
+  margin-bottom: 2rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sectionHeader .sectionTitle {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.seeAll {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.seeAll:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .narrow {
   max-width: 44rem;
 }

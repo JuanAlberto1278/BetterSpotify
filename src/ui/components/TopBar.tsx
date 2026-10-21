@@ -39,7 +39,9 @@ export default function TopBar({ route }: { route: Route }) {
   const onSearchChange = (value: string) => {
     // Desde otra vista se agrega una entrada al historial (para poder volver);
     // mientras se escribe en la búsqueda solo se reemplaza.
-    navigate(paths.search(value), { replace: route.name === 'search' });
+    // Se mantiene la pestaña de resultados elegida (Todo, Canciones, Artistas...).
+    const tab = route.name === 'search' ? route.tab : 'all';
+    navigate(paths.search(value, tab), { replace: route.name === 'search' });
   };
 
   return (

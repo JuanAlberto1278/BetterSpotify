@@ -63,7 +63,7 @@ export default function MainLayout({ route }: { route: Route }) {
 function View({ route }: { route: Route }) {
   switch (route.name) {
     case 'search':
-      return <SearchView query={route.query} />;
+      return <SearchView query={route.query} tab={route.tab} />;
     case 'liked':
       return <LikedView />;
     case 'savedAlbums':

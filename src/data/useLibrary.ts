@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { albumTracksAsTracks, getAlbum, getAlbumTracksPage } from '../api/albums';
 import { getArtist, getArtistAlbumsPage, type DiscographyGroup } from '../api/artists';
 import { getSavedAlbumsPage, getSavedTracksPage } from '../api/library';
 import { getMyPlaylistsPage, getPlaylist, getPlaylistTracksPage } from '../api/playlists';
-import { searchTracksPage } from '../api/search';
 import type { Album, AlbumSummary, Artist, SimplifiedPlaylist, Track } from '../api/types';
 import { primeSaved } from './libraryStore';
 import { useAsync, type AsyncResult } from './useAsync';
@@ -95,28 +94,4 @@ export function useArtistAlbums(artistId: string, groups: DiscographyGroup[]): P
     [artistId, key],
   );
   return usePagedList(fetchPage);
-}
-
-const SEARCH_DEBOUNCE_MS = 400;
-
-/** Búsqueda de canciones con debounce. Una consulta vacía no pide nada. */
-export function useTrackSearch(query: string): PagedList<Track> & { debouncedQuery: string } {
-  const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
-  const fetchPage = useMemo(
-    () =>
-      debouncedQuery
-        ? (url: string | null, signal: AbortSignal) => searchTracksPage(debouncedQuery, url, signal)
-        : null,
-    [debouncedQuery],
-  );
-  return { ...usePagedList(fetchPage), debouncedQuery };
-}
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(id);
-  }, [value, delayMs]);
-  return debounced;
 }

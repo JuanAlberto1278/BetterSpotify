@@ -31,6 +31,10 @@
   box-shadow: 0 6px 16px rgb(0 0 0 / 0.4);
 }
 
+.round {
+  border-radius: 50%;
+}
+
 .placeholder {
   display: grid;
   place-items: center;

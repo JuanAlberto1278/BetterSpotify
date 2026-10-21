@@ -8,6 +8,7 @@
 
 ## Hecho
 
+- Búsqueda completa: pestañas Todo / Canciones / Artistas / Álbumes / Playlists (`/search?q=&tab=`).
 - Barra superior con menús (Biblioteca, Perfil), buscador integrado, atrás/adelante; Inicio con playlists; "Tus playlists"; Configuración (transferir al abrir).
 - "Tus álbumes" (`/collection/albums`).
 - ♥ Guardar / quitar en Tu biblioteca (canciones y álbumes) con `/me/library`; estado compartido en `data/libraryStore.ts`.
