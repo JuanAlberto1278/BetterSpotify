@@ -19,6 +19,88 @@
   min-width: 0;
 }
 
+.pageTitle {
+  margin: 0.5rem 0 1rem;
+  font-size: 2rem;
+}
+
+.sectionTitle {
+  margin: 1.5rem 0 1rem;
+  font-size: 1.3rem;
+}
+
+.narrow {
+  max-width: 44rem;
+}
+
+/* Fila de ajuste: texto a la izquierda, interruptor a la derecha. */
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #2a2a2a;
+  cursor: pointer;
+}
+
+.settingTitle {
+  display: block;
+  font-weight: 600;
+}
+
+.settingHelp {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.settingNote {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Interruptor hecho con un checkbox nativo (accesible y con teclado). */
+.switch {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  border-radius: 999px;
+  background: #555;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch:checked::after {
+  transform: translateX(18px);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .round {
   border-radius: 50%;
 }

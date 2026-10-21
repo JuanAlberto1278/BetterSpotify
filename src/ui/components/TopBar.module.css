@@ -1,0 +1,153 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: #000;
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.left {
+  flex: 1;
+}
+
+.right {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.logo {
+  display: inline-grid;
+  place-items: center;
+  margin-right: 0.25rem;
+}
+
+.history {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.round {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #1e1e1e;
+  color: var(--text);
+}
+
+.round:hover {
+  background: #2a2a2a;
+}
+
+.activeTrigger {
+  color: var(--text);
+}
+
+.search {
+  display: flex;
+  flex: 0 1 420px;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #1f1f1f;
+  color: var(--text-muted);
+}
+
+.search:hover {
+  background: #2a2a2a;
+}
+
+.search:focus-within {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 0;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  display: inline-grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.85rem;
+}
+
+.triggerText {
+  max-width: 12rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.menuCover {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  background: #333;
+  object-fit: cover;
+}
+
+.menuStatus {
+  padding: 0.5rem 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 800px) {
+  .bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .history {
+    display: none;
+  }
+
+  .left,
+  .right {
+    flex: 0 0 auto;
+  }
+
+  .left {
+    margin-right: auto;
+  }
+
+  .search {
+    order: 3;
+    flex: 1 1 100%;
+  }
+
+  .triggerText {
+    display: none;
+  }
+}

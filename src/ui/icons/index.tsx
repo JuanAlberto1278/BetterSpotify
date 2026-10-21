@@ -157,7 +157,85 @@ export const ArtistIcon = (p: IconProps) => (
   </Icon>
 );
 
-export const CloseIcon =(p: IconProps) => (
+// ── Barra superior ──────────────────────────────────────────────────────────
+
+/** Logo de la app (mismo dibujo que el favicon). Usa colores propios. */
+export const LogoIcon = ({ size = 28, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false" {...p}>
+    <rect width="32" height="32" rx="8" fill="var(--accent)" />
+    <path fill="#fff" d="M12 9.2v13.6a.9.9 0 0 0 1.38.77l10.8-6.8a.9.9 0 0 0 0-1.54l-10.8-6.8A.9.9 0 0 0 12 9.2z" />
+  </svg>
+);
+
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M15 5l-7 7 7 7" />
+  </Icon>
+);
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 5l7 7-7 7" />
+  </Icon>
+);
+
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 9l6 6 6-6" />
+  </Icon>
+);
+
+/** Libros en un estante: "Biblioteca". */
+export const LibraryIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 4v16" />
+    <path d="M10 4v16" />
+    <path d="M14.5 4.6l4.8 14.8" />
+  </Icon>
+);
+
+export const SettingsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3" />
+  </Icon>
+);
+
+export const KeyboardIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+  </Icon>
+);
+
+export const LogoutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5" />
+    <path d="M21 12H9" />
+  </Icon>
+);
+
+export const ExternalIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4l-9 9" />
+    <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </Icon>
+);
+
+/** Ícono genérico de playlist (placeholder sin portada). */
+export const PlaylistIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 6h12" />
+    <path d="M3 12h12" />
+    <path d="M3 18h7" />
+    <path d="M17 18V8l4-1" />
+    <circle cx="15" cy="18" r="2" />
+  </Icon>
+);
+
+export const CloseIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M6 6l12 12" />
     <path d="M18 6L6 18" />

@@ -1,58 +1,47 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../auth/useAuth';
 import { useKeyboardShortcuts } from '../../player/useKeyboardShortcuts';
-import { navigate } from '../../router/router';
-import { paths, type Route } from '../../router/routes';
+import type { Route } from '../../router/routes';
 import AlbumView from '../components/AlbumView';
 import ArtistView from '../components/ArtistView';
 import ErrorBoundary from '../components/ErrorBoundary';
+import HomeView from '../components/HomeView';
 import LikedView from '../components/LikedView';
 import PlayerBar from '../components/PlayerBar';
+import PlaylistsView from '../components/PlaylistsView';
 import PlaylistView from '../components/PlaylistView';
 import QueuePanel from '../components/QueuePanel';
 import SavedAlbumsView from '../components/SavedAlbumsView';
-import SearchView, { SEARCH_INPUT_ID } from '../components/SearchView';
-import Sidebar from '../components/Sidebar';
+import SearchView from '../components/SearchView';
+import SettingsView from '../components/SettingsView';
+import TopBar, { SEARCH_INPUT_ID } from '../components/TopBar';
 import styles from './MainLayout.module.css';
 
 export default function MainLayout({ route }: { route: Route }) {
-  const { user, userError } = useAuth();
+  const { userError } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
 
   const toggleQueue = useCallback(() => setQueueOpen((open) => !open), []);
   const focusSearch = useCallback(() => {
-    if (route.name !== 'search') navigate(paths.search());
-    // Esperar a que se monte el input si veníamos de otra vista.
-    requestAnimationFrame(() => document.getElementById(SEARCH_INPUT_ID)?.focus());
-  }, [route.name]);
+    const input = document.getElementById(SEARCH_INPUT_ID) as HTMLInputElement | null;
+    input?.focus();
+    input?.select();
+  }, []);
 
   useKeyboardShortcuts({ onFocusSearch: focusSearch, onToggleQueue: toggleQueue });
 
   return (
     <div className={`${styles.layout} ${queueOpen ? styles.withQueue : ''}`}>
-      <Sidebar route={route} />
+      <div className={styles.top}>
+        <TopBar route={route} />
+      </div>
 
       <main className={styles.content}>
         {userError && <p className={styles.error}>{userError}</p>}
 
         {/* Un error en una vista no tumba el reproductor; al navegar se reintenta. */}
         <ErrorBoundary resetKey={route} title="No se pudo mostrar esta vista">
-          {route.name === 'search' && <SearchView query={route.query} />}
-          {route.name === 'liked' && <LikedView />}
-          {route.name === 'savedAlbums' && <SavedAlbumsView />}
-          {route.name === 'playlist' && <PlaylistView key={route.id} playlistId={route.id} />}
-          {route.name === 'album' && <AlbumView key={route.id} albumId={route.id} />}
-          {route.name === 'artist' && <ArtistView key={route.id} artistId={route.id} />}
-          {(route.name === 'home' || route.name === 'notFound' || route.name === 'callback') && (
-            <>
-              <h1>Hola{user?.display_name ? `, ${user.display_name}` : ''}</h1>
-              <p className={styles.placeholder}>
-                {route.name === 'notFound'
-                  ? 'Esa página no existe.'
-                  : 'Elegí una playlist o buscá una canción.'}
-              </p>
-            </>
-          )}
+          <View route={route} />
         </ErrorBoundary>
       </main>
 
@@ -64,7 +53,34 @@ export default function MainLayout({ route }: { route: Route }) {
         </div>
       )}
 
-      <PlayerBar queueOpen={queueOpen} onToggleQueue={toggleQueue} />
+      <div className={styles.player}>
+        <PlayerBar queueOpen={queueOpen} onToggleQueue={toggleQueue} />
+      </div>
     </div>
   );
+}
+
+function View({ route }: { route: Route }) {
+  switch (route.name) {
+    case 'search':
+      return <SearchView query={route.query} />;
+    case 'liked':
+      return <LikedView />;
+    case 'savedAlbums':
+      return <SavedAlbumsView />;
+    case 'playlists':
+      return <PlaylistsView />;
+    case 'playlist':
+      return <PlaylistView key={route.id} playlistId={route.id} />;
+    case 'album':
+      return <AlbumView key={route.id} albumId={route.id} />;
+    case 'artist':
+      return <ArtistView key={route.id} artistId={route.id} />;
+    case 'settings':
+      return <SettingsView />;
+    case 'notFound':
+      return <HomeView notFound />;
+    default:
+      return <HomeView />;
+  }
 }

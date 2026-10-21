@@ -5,6 +5,8 @@ export type Route =
   | { name: 'playlist'; id: string }
   | { name: 'liked' }
   | { name: 'savedAlbums' }
+  | { name: 'playlists' }
+  | { name: 'settings' }
   | { name: 'album'; id: string }
   | { name: 'artist'; id: string }
   | { name: 'notFound' };
@@ -26,7 +28,10 @@ export function parseRoute(location: string): Route {
     case 'collection':
       if (parts[1] === 'tracks') return { name: 'liked' };
       if (parts[1] === 'albums') return { name: 'savedAlbums' };
+      if (parts[1] === 'playlists') return { name: 'playlists' };
       return { name: 'notFound' };
+    case 'settings':
+      return { name: 'settings' };
     case 'album':
       return parts[1] ? { name: 'album', id: parts[1] } : { name: 'notFound' };
     case 'artist':
@@ -43,6 +48,8 @@ export const paths = {
   playlist: (id: string) => `/playlist/${encodeURIComponent(id)}`,
   liked: () => '/collection/tracks',
   savedAlbums: () => '/collection/albums',
+  playlists: () => '/collection/playlists',
+  settings: () => '/settings',
   album: (id: string) => `/album/${encodeURIComponent(id)}`,
   artist: (id: string) => `/artist/${encodeURIComponent(id)}`,
 };

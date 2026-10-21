@@ -1,22 +1,35 @@
 .layout {
   height: 100vh;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'sidebar content'
-    'player player';
+    'top'
+    'content'
+    'player';
 }
 
 .withQueue {
-  grid-template-columns: 260px minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   grid-template-areas:
-    'sidebar content queue'
-    'player player player';
+    'top top'
+    'content queue'
+    'player player';
 }
 
-.layout > aside:first-child {
-  grid-area: sidebar;
+.top {
+  grid-area: top;
+}
+
+.player {
+  grid-area: player;
+}
+
+.content {
+  grid-area: content;
+  overflow-y: auto;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  background: linear-gradient(#1f1f1f, var(--bg) 320px);
 }
 
 .queueSlot {
@@ -31,53 +44,22 @@
   flex: 1;
 }
 
-.layout > footer {
-  grid-area: player;
-}
-
-.content {
-  grid-area: content;
-  overflow-y: auto;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(#1f1f1f, var(--bg) 320px);
-}
-
 .error {
   color: var(--danger);
 }
 
-.placeholder {
-  color: var(--text-muted);
-}
-
-@media (max-width: 1000px) {
+@media (max-width: 800px) {
+  /* En pantallas chicas la cola reemplaza al contenido. */
   .withQueue {
-    grid-template-columns: 220px minmax(0, 1fr) 260px;
-  }
-}
-
-@media (max-width: 700px) {
-  .layout,
-  .withQueue {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'sidebar'
-      'content'
+      'top'
+      'queue'
       'player';
   }
 
-  .layout > aside:first-child {
-    max-height: 35vh;
-  }
-
-  /* En pantallas chicas la cola reemplaza al contenido. */
-  .withQueue > main {
+  .withQueue > .content {
     display: none;
-  }
-
-  .withQueue > .queueSlot {
-    grid-area: content;
   }
 
   .content {

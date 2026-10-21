@@ -9,6 +9,7 @@ import {
   transferPlayback,
   type RepeatMode,
 } from '../api/player';
+import { getSettings } from '../settings/settings';
 import { loadSpotifySdk } from './loadSdk';
 import {
   PlayerContext,
@@ -97,9 +98,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           if (cancelled) return;
           setDeviceId(device_id);
           setStatus('ready');
+          // Solo la primera vez y si el usuario lo tiene activado en Configuración.
           if (!transferredRef.current) {
             transferredRef.current = true;
-            transferWithRetry(device_id).catch((err) => warn(describeError(err)));
+            if (getSettings().autoTransferOnStart) {
+              transferWithRetry(device_id).catch((err) => warn(describeError(err)));
+            }
           }
         });
         player.addListener('not_ready', () => {

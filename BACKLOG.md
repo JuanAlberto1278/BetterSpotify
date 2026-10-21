@@ -8,6 +8,8 @@
 
 ## Hecho
 
+- Barra superior con menús (Biblioteca, Perfil), buscador integrado, atrás/adelante; Inicio con playlists; "Tus playlists"; Configuración (transferir al abrir).
+- "Tus álbumes" (`/collection/albums`).
 - ♥ Guardar / quitar en Tu biblioteca (canciones y álbumes) con `/me/library`; estado compartido en `data/libraryStore.ts`.
 - Vistas de álbum (`/album/:id`) y de artista (`/artist/:id`, discografía por pestañas); links desde canciones y reproductor.
 - Íconos SVG con estado (`src/ui/icons/`): aleatorio/repetir gris o acento, volumen por nivel,
